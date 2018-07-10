@@ -1,4 +1,5 @@
 """wpsync
+
 Synchronise WordPress sites across ssh and (s)ftp hosts
 
 Usage:
@@ -8,6 +9,12 @@ Usage:
   wpsync [-v] [-c file] list [[-dupt] | [-a] | [-f]] [site]
   wpsync -h | --help
   wpsync -V | --version
+
+Arguments:
+  source  Name of a WordPress site from your config file
+  dest    Name of a WordPress site from your config file
+  site    Name of a WordPress site from your config file
+  backup  ID of a specific backup to use
 
 Options:
   -h --help              Output usage information.
