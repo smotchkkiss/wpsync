@@ -31,6 +31,34 @@ Options:
 from docopt import docopt
 
 
+def sync(args):
+    if args['--verbose']:
+        print('SYNC')
+
+
+def backup(args):
+    if args['--verbose']:
+        print('BACKUP')
+
+
+def rollback(args):
+    if args['--verbose']:
+        print('ROLLBACK')
+
+
+def list_backups(args):
+    if args['--verbose']:
+        print('LIST')
+
+
 if __name__ == '__main__':
     arguments = docopt(__doc__, version='PyWpsync 0.0.0')
-    print(arguments)
+
+    if arguments['sync']:
+        sync(arguments)
+    elif arguments['backup']:
+        backup(arguments)
+    elif arguments['rollback']:
+        rollback(arguments)
+    elif arguments['list']:
+        list_backups(arguments)
