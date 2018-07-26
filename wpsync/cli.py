@@ -36,35 +36,40 @@ Options:
 # (-d [-upt] | -u [-dpt] | -p [-dut] | -t [-dup])
 from pathlib import Path
 from docopt import docopt
-from utils import find_backup_dir, get_config
+from utils import get_config, get_wpsyncdir, assert_site_exists
 
 
 def sync():
+    assert_site_exists(config, arguments['<source>'])
+    assert_site_exists(config, arguments['<dest>'])
     if arguments['--verbose']:
         print('SYNC')
 
 
 def backup():
+    assert_site_exists(config, arguments['<source>'])
     if arguments['--verbose']:
         print('BACKUP')
 
 
 def rollback():
+    if arguments['[dest]'] is not None:
+        assert_site_exists(config, arguments['[dest]'])
     if arguments['--verbose']:
         print('ROLLBACK')
 
 
 def list_backups():
+    if arguments['[site]'] is not None:
+        assert_site_exists(config, arguments['[site]'])
     if arguments['--verbose']:
         print('LIST')
 
 
 if __name__ == '__main__':
     arguments = docopt(__doc__, version='PyWpsync 0.0.0')
-    config = get_config(arguments['--config'])
-    wpsyncdir = find_backup_dir()
-
-    # print(arguments)
+    (config, config_path) = get_config(arguments['--config'])
+    wpsyncdir = get_wpsyncdir(config_path)
 
     if arguments['sync']:
         sync()
