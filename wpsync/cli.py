@@ -5,28 +5,28 @@ Synchronise WordPress sites across ssh, (s)ftp and local hosts
 Usage:
   wpsync [-v] [-c file] sync ((-d|-u|-p|-t)... | -a | -f) <source> <dest>
   wpsync [-v] [-c file] backup ((-d|-u|-p|-t)... | -a | -f) <source>
-  wpsync [-v] [-c file] rollback ((-d|-u|-p|-t)... | -a | -f) [backup] [dest]
-  wpsync [-v] [-c file] list ((-d|-u|-p|-t)... | -a | -f) [site]
+  wpsync [-v] [-c file] rollback [(-d|-u|-p|-t)... | -a | -f] [-b backup] [-s site]
+  wpsync [-v] [-c file] list [(-d|-u|-p|-t)... | -a | -f] [-s site]
   wpsync -h | --help
   wpsync -V | --version
 
 Arguments:
   source  Name of a WordPress site from your config file
   dest    Name of a WordPress site from your config file
-  site    Name of a WordPress site from your config file
-  backup  ID of a specific backup to use
 
 Options:
-  -h --help              Output usage information.
-  -V --version           Output version number.
-  -v --verbose           Print what you're doing.
-  -c file --config=file  Use the config file specified.
-  -d --database          Sync/Backup/Rollback database.
-  -u --uploads           Sync/Backup/Rollback uploads.
-  -p --plugins           Sync/Backup/Rollback plugins.
-  -t --themes            Sync/Backup/Rollback the theme(s).
-  -a --all               Sync/Backup/Rollback all of the above.
-  -f --full              Sync/Backup/Rollback the full site.
+  -h --help                  Output usage information.
+  -V --version               Output version number.
+  -v --verbose               Print what you're doing.
+  -c file --config=file      Use the config file specified.
+  -b backup --backup=backup  ID of a specific backup to use.
+  -s site --site=site        Specify a site where it's optional.
+  -d --database              Sync/Backup/Rollback database.
+  -u --uploads               Sync/Backup/Rollback uploads.
+  -p --plugins               Sync/Backup/Rollback plugins.
+  -t --themes                Sync/Backup/Rollback the theme(s).
+  -a --all                   Sync/Backup/Rollback all of the above.
+  -f --full                  Sync/Backup/Rollback the full site.
 """
 # The (-d|-u|-p|-t)... thing is a hack to make docopt accept any,
 # but at least one of -d, -u, -p, -t.
@@ -53,17 +53,17 @@ def backup():
 
 
 def rollback():
-    if arguments['[dest]'] is not None:
-        assert_site_exists(config, arguments['[dest]'])
+    if arguments['--site'] is not None:
+        assert_site_exists(config, arguments['--site'])
     if arguments['--verbose']:
         print('ROLLBACK')
 
 
 def list_backups():
-    if arguments['[site]'] is not None:
-        assert_site_exists(config, arguments['[site]'])
     if arguments['--verbose']:
         print('LIST')
+    if arguments['--site'] is not None:
+        assert_site_exists(config, arguments['--site'])
 
 
 if __name__ == '__main__':
