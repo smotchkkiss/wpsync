@@ -150,6 +150,25 @@ def get_wpsyncdir(config_path):
     return path
 
 
+def get_options(arguments):
+    return {
+        'database': bool(arguments['--database'] or arguments['--all']),
+        'uploads': bool(arguments['--uploads'] or arguments['--all']),
+        'plugins': bool(arguments['--plugins'] or arguments['--all']),
+        'themes': bool(arguments['--themes'] or arguments['--all']),
+        'full': arguments['--all'],
+    }
+
+
+def get_site(site_name, config, legacy):
+    if legacy:
+        for site in config:
+            if site['name'] == site_name:
+                return site
+    else:
+        return config[site_name]
+
+
 def assert_site_exists(config, name, legacy):
     if legacy:
         site_exists = name in [config[site]['name'] for site in config.keys()]

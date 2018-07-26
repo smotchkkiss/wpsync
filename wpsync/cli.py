@@ -37,7 +37,13 @@ Options:
 # (-d [-upt] | -u [-dpt] | -p [-dut] | -t [-dup])
 from pathlib import Path
 from docopt import docopt
-from utils import get_config, get_wpsyncdir, assert_site_exists
+from cli_helpers import (
+    assert_site_exists,
+    get_config,
+    get_options,
+    get_site,
+    get_wpsyncdir,
+)
 from list_backups import list_backups as _list_backups
 
 
@@ -64,13 +70,20 @@ def rollback():
 def list_backups():
     if arguments['--site'] is not None:
         assert_site_exists(config, arguments['--site'], arguments['--legacy'])
-    _list_backups(arguments, config, wpsyncdir)
+        site_names = [arguments['--site']]
+    else:
+        if arguments['--legacy']:
+            site_names = [config[site]['name'] for site in config.keys()]
+        else:
+            site_names = config.keys()
+    _list_backups(site_names, wpsyncdir, **options)
 
 
 if __name__ == '__main__':
     arguments = docopt(__doc__, version='PyWpsync 0.0.0')
     (config, config_path) = get_config(arguments['--config'])
     wpsyncdir = get_wpsyncdir(config_path)
+    options = get_options(arguments)
 
     if arguments['sync']:
         sync()
