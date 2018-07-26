@@ -150,7 +150,11 @@ def get_wpsyncdir(config_path):
     return path
 
 
-def assert_site_exists(config, name):
-    if not name in config:
-        print(f'Site "{name}" is not configured.')
+def assert_site_exists(config, name, legacy):
+    if legacy:
+        site_exists = name in [config[site]['name'] for site in config.keys()]
+    else:
+        site_exists = name in config
+    if not site_exists:
+        print(f'Site {name} is not configured.')
         sys.exit(1)

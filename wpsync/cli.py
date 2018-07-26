@@ -3,10 +3,10 @@
 Synchronise WordPress sites across ssh, (s)ftp and local hosts
 
 Usage:
-  wpsync [-v] [-c file] sync ((-d|-u|-p|-t)... | -a | -f) <source> <dest>
-  wpsync [-v] [-c file] backup ((-d|-u|-p|-t)... | -a | -f) <source>
-  wpsync [-v] [-c file] rollback [(-d|-u|-p|-t)... | -a | -f] [-b backup] [-s site]
-  wpsync [-v] [-c file] list [(-d|-u|-p|-t)... | -a | -f] [-s site]
+  wpsync [-v] [-c file] [-l] sync ((-d|-u|-p|-t)... | -a | -f) <source> <dest>
+  wpsync [-v] [-c file] [-l] backup ((-d|-u|-p|-t)... | -a | -f) <source>
+  wpsync [-v] [-c file] [-l] rollback [(-d|-u|-p|-t)... | -a | -f] [-b backup] [-s site]
+  wpsync [-v] [-c file] [-l] list [(-d|-u|-p|-t)... | -a | -f] [-s site]
   wpsync -h | --help
   wpsync -V | --version
 
@@ -19,6 +19,7 @@ Options:
   -V --version               Output version number.
   -v --verbose               Print what you're doing.
   -c file --config=file      Use the config file specified.
+  -l --legacy                Use old name field instead of config section headers.
   -b backup --backup=backup  ID of a specific backup to use.
   -s site --site=site        Specify a site where it's optional.
   -d --database              Sync/Backup/Rollback database.
@@ -37,33 +38,33 @@ Options:
 from pathlib import Path
 from docopt import docopt
 from utils import get_config, get_wpsyncdir, assert_site_exists
+from list_backups import list_backups as _list_backups
 
 
 def sync():
-    assert_site_exists(config, arguments['<source>'])
-    assert_site_exists(config, arguments['<dest>'])
+    assert_site_exists(config, arguments['<source>'], arguments['--legacy'])
+    assert_site_exists(config, arguments['<dest>'], arguments['--legacy'])
     if arguments['--verbose']:
         print('SYNC')
 
 
 def backup():
-    assert_site_exists(config, arguments['<source>'])
+    assert_site_exists(config, arguments['<source>'], arguments['--legacy'])
     if arguments['--verbose']:
         print('BACKUP')
 
 
 def rollback():
     if arguments['--site'] is not None:
-        assert_site_exists(config, arguments['--site'])
+        assert_site_exists(config, arguments['--site'], arguments['--legacy'])
     if arguments['--verbose']:
         print('ROLLBACK')
 
 
 def list_backups():
-    if arguments['--verbose']:
-        print('LIST')
     if arguments['--site'] is not None:
-        assert_site_exists(config, arguments['--site'])
+        assert_site_exists(config, arguments['--site'], arguments['--legacy'])
+    _list_backups(arguments, config, wpsyncdir)
 
 
 if __name__ == '__main__':
