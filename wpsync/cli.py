@@ -1,12 +1,12 @@
 """wpsync
 
-Synchronise WordPress sites across ssh and (s)ftp hosts
+Synchronise WordPress sites across ssh, (s)ftp and local hosts
 
 Usage:
-  wpsync [-v] [-c file] sync [[-dupt] | [-a] | [-f]] <source> <dest>
-  wpsync [-v] [-c file] backup [[-dupt] | [-a] | [-f]] <source>
-  wpsync [-v] [-c file] rollback [[-dupt] | [-a] | [-f]] [backup] [dest]
-  wpsync [-v] [-c file] list [[-dupt] | [-a] | [-f]] [site]
+  wpsync [-v] [-c file] sync ((-d|-u|-p|-t)... | -a | -f) <source> <dest>
+  wpsync [-v] [-c file] backup ((-d|-u|-p|-t)... | -a | -f) <source>
+  wpsync [-v] [-c file] rollback ((-d|-u|-p|-t)... | -a | -f) [backup] [dest]
+  wpsync [-v] [-c file] list ((-d|-u|-p|-t)... | -a | -f) [site]
   wpsync -h | --help
   wpsync -V | --version
 
@@ -28,37 +28,49 @@ Options:
   -a --all               Sync/Backup/Rollback all of the above.
   -f --full              Sync/Backup/Rollback the full site.
 """
+# The (-d|-u|-p|-t)... thing is a hack to make docopt accept any,
+# but at least one of -d, -u, -p, -t.
+# https://stackoverflow.com/a/43983602
+# A downside is that it will also accept multiple mentions, but I
+# think it's still better than spelling out the options like
+# (-d [-upt] | -u [-dpt] | -p [-dut] | -t [-dup])
+from pathlib import Path
 from docopt import docopt
+from utils import find_backup_dir, get_config
 
 
-def sync(args):
-    if args['--verbose']:
+def sync():
+    if arguments['--verbose']:
         print('SYNC')
 
 
-def backup(args):
-    if args['--verbose']:
+def backup():
+    if arguments['--verbose']:
         print('BACKUP')
 
 
-def rollback(args):
-    if args['--verbose']:
+def rollback():
+    if arguments['--verbose']:
         print('ROLLBACK')
 
 
-def list_backups(args):
-    if args['--verbose']:
+def list_backups():
+    if arguments['--verbose']:
         print('LIST')
 
 
 if __name__ == '__main__':
     arguments = docopt(__doc__, version='PyWpsync 0.0.0')
+    config = get_config(arguments['--config'])
+    wpsyncdir = find_backup_dir()
+
+    # print(arguments)
 
     if arguments['sync']:
-        sync(arguments)
+        sync()
     elif arguments['backup']:
-        backup(arguments)
+        backup()
     elif arguments['rollback']:
-        rollback(arguments)
+        rollback()
     elif arguments['list']:
-        list_backups(arguments)
+        list_backups()
