@@ -1,5 +1,6 @@
 from pathlib import Path
 from configparser import ConfigParser
+from urllib.parse import quote, unquote
 import sys
 from schema import Schema, Or, Optional, SchemaError
 
@@ -177,3 +178,11 @@ def assert_site_exists(config, name, legacy):
     if not site_exists:
         print(f'Site {name} is not configured.')
         sys.exit(1)
+
+
+def encode_site_name(plain_site_name):
+    return quote(plain_site_name, safe='')
+
+
+def decode_site_name(encoded_site_name):
+    return unquote(encoded_site_name)

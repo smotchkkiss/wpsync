@@ -39,6 +39,7 @@ from pathlib import Path
 from docopt import docopt
 from cli_helpers import (
     assert_site_exists,
+    encode_site_name,
     get_config,
     get_options,
     get_site,
@@ -84,6 +85,9 @@ if __name__ == '__main__':
     (config, config_path) = get_config(arguments['--config'])
     wpsyncdir = get_wpsyncdir(config_path)
     options = get_options(arguments)
+
+    for site in config:
+        config[site]['fs_safe_name'] = encode_site_name(config[site]['name'])
 
     if arguments['sync']:
         sync()
