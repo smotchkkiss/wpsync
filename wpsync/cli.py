@@ -72,7 +72,14 @@ def list_backups():
     if arguments['--site'] is not None:
         assert_site_exists(config, arguments['--site'], arguments['--legacy'])
         site_name = arguments['--site']
-        site_names = [(site_name, config[site_name]['fs_safe_name'])]
+        if arguments['--legacy']:
+            site = [config[_site_name]
+                    for _site_name
+                    in config.keys()
+                    if config[_site_name]['name'] == site_name][0]
+            site_names = [(site['name'], site['fs_safe_name'])]
+        else:
+            site_names = [(site_name, config[site_name]['fs_safe_name'])]
     else:
         if arguments['--legacy']:
             site_names = [(config[site]['name'], config[site]['fs_safe_name'])
