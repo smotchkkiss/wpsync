@@ -2,8 +2,8 @@ def list_backups(site_names, wpsyncdir,
                  database, uploads, plugins, themes, full):
     is_single = len(site_names) == 1
     backup_dir = wpsyncdir / 'backups'
-    for site_name in site_names:
-        site_backup_dir = backup_dir / site_name
+    for (site_name, fs_safe_name) in site_names:
+        site_backup_dir = backup_dir / fs_safe_name
         try:
             for backup_path in site_backup_dir.iterdir():
                 bn = backup_path.name

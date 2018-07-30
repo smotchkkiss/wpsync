@@ -71,12 +71,17 @@ def rollback():
 def list_backups():
     if arguments['--site'] is not None:
         assert_site_exists(config, arguments['--site'], arguments['--legacy'])
-        site_names = [arguments['--site']]
+        site_name = arguments['--site']
+        site_names = [(site_name, config[site_name]['fs_safe_name'])]
     else:
         if arguments['--legacy']:
-            site_names = [config[site]['name'] for site in config.keys()]
+            site_names = [(config[site]['name'], config[site]['fs_safe_name'])
+                          for site
+                          in config.keys()]
         else:
-            site_names = config.keys()
+            site_names = [(site, config[site]['fs_safe_name'])
+                          for site
+                          in config.keys()]
     _list_backups(site_names, wpsyncdir, **options)
 
 
