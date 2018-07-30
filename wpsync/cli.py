@@ -87,7 +87,12 @@ if __name__ == '__main__':
     options = get_options(arguments)
 
     for site in config:
-        config[site]['fs_safe_name'] = encode_site_name(config[site]['name'])
+        if arguments['--legacy']:
+            config[site]['fs_safe_name'] = encode_site_name(
+                config[site]['name']
+            )
+        else:
+            config[site]['fs_safe_name'] = encode_site_name(site)
 
     if arguments['sync']:
         sync()
