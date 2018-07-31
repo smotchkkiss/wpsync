@@ -1,4 +1,4 @@
-def list_backups(site_names, wpsyncdir,
+def list_backups(wpsyncdir, site_names,
                  database, uploads, plugins, themes, full):
     is_single = len(site_names) == 1
     backup_dir = wpsyncdir / 'backups'

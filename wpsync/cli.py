@@ -43,71 +43,64 @@ from cli_helpers import (
     encode_site_name,
     get_config,
     get_options,
-    get_site,
     get_wpsyncdir,
 )
+from connection import connect
 from list_backups import list_backups as _list_backups
+from backup import backup as _backup
 
 
 def sync():
-    assert_site_exists(config, arguments['<source>'], arguments['--legacy'])
-    assert_site_exists(config, arguments['<dest>'], arguments['--legacy'])
+    assert_site_exists(config, arguments['<source>'])
+    assert_site_exists(config, arguments['<dest>'])
     if arguments['--verbose']:
         print('SYNC')
 
 
 def backup():
-    assert_site_exists(config, arguments['<source>'], arguments['--legacy'])
-    if arguments['--verbose']:
-        print('BACKUP')
+    assert_site_exists(config, arguments['<source>'])
+    site = config[arguments['<source>']]
+    with connect(site) as connection:
+        _backup(wpsyncdir, site, connection, arguments['--verbose'], **options)
 
 
 def rollback():
     if arguments['--site'] is not None:
-        assert_site_exists(config, arguments['--site'], arguments['--legacy'])
+        assert_site_exists(config, arguments['--site'])
     if arguments['--verbose']:
         print('ROLLBACK')
 
 
 def list_backups():
     if arguments['--site'] is not None:
-        assert_site_exists(config, arguments['--site'], arguments['--legacy'])
+        assert_site_exists(config, arguments['--site'])
         site_name = arguments['--site']
-        if arguments['--legacy']:
-            site = [config[_site_name]
-                    for _site_name
-                    in config.keys()
-                    if config[_site_name]['name'] == site_name][0]
-            site_names = [(site['name'], site['fs_safe_name'])]
-        else:
-            site_names = [(site_name, config[site_name]['fs_safe_name'])]
+        site_names = [(site_name, config[site_name]['fs_safe_name'])]
     else:
-        if arguments['--legacy']:
-            site_names = [(config[site]['name'], config[site]['fs_safe_name'])
-                          for site
-                          in config.keys()]
-        else:
-            site_names = [(site, config[site]['fs_safe_name'])
-                          for site
-                          in config.keys()]
-    _list_backups(site_names, wpsyncdir, **options)
+        site_names = [(site, config[site]['fs_safe_name'])
+                        for site
+                        in config.keys()]
+    _list_backups(wpsyncdir, site_names, **options)
 
 
 if __name__ == '__main__':
-    for executable_name in ['cat', 'ssh', 'scp', 'lftp']:
+    for executable_name in ['cat', 'lftp', 'rsync', 'ssh', 'scp']:
         check_required_executable(executable_name)
     arguments = docopt(__doc__, version='PyWpsync 0.0.0')
     (config, config_path) = get_config(arguments['--config'])
     wpsyncdir = get_wpsyncdir(config_path)
     options = get_options(arguments)
 
+    if arguments['--legacy']:
+        new_config = {}
+        for site in config:
+            new_config[config[site]['name']] = config[site]
+            del config[site]['name']
+        config = new_config
+
     for site in config:
-        if arguments['--legacy']:
-            config[site]['fs_safe_name'] = encode_site_name(
-                config[site]['name']
-            )
-        else:
-            config[site]['fs_safe_name'] = encode_site_name(site)
+        config[site]['name'] = site
+        config[site]['fs_safe_name'] = encode_site_name(site)
 
     if arguments['sync']:
         sync()

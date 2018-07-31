@@ -173,21 +173,8 @@ def get_options(arguments):
     }
 
 
-def get_site(site_name, config, legacy):
-    if legacy:
-        for site in config:
-            if site['name'] == site_name:
-                return site
-    else:
-        return config[site_name]
-
-
-def assert_site_exists(config, name, legacy):
-    if legacy:
-        site_exists = name in [config[site]['name'] for site in config.keys()]
-    else:
-        site_exists = name in config
-    if not site_exists:
+def assert_site_exists(config, name):
+    if not name in config:
         print(f'Site {name} is not configured.')
         sys.exit(1)
 
