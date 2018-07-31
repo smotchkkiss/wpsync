@@ -2,7 +2,19 @@ from pathlib import Path
 from configparser import ConfigParser
 from urllib.parse import quote, unquote
 import sys
+import os
 from schema import Schema, Or, Optional, SchemaError
+
+
+# https://stackoverflow.com/a/377028
+def check_required_executable(executable_name):
+    paths = os.environ['PATH'].split(os.pathsep)
+    for path in paths:
+        exec_path = os.path.join(path, executable_name)
+        if os.path.isfile(exec_path) and os.access(exec_path, os.X_OK):
+            return
+    print(f'wpsync requires {executable_name} to be installed on your system.')
+    sys.exit(1)
 
 
 config_file_names = [

@@ -39,6 +39,7 @@ from pathlib import Path
 from docopt import docopt
 from cli_helpers import (
     assert_site_exists,
+    check_required_executable,
     encode_site_name,
     get_config,
     get_options,
@@ -93,6 +94,8 @@ def list_backups():
 
 
 if __name__ == '__main__':
+    for executable_name in ['cat', 'ssh', 'scp', 'lftp']:
+        check_required_executable(executable_name)
     arguments = docopt(__doc__, version='PyWpsync 0.0.0')
     (config, config_path) = get_config(arguments['--config'])
     wpsyncdir = get_wpsyncdir(config_path)
