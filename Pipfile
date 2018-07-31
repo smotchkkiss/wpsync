@@ -6,6 +6,8 @@ name = "pypi"
 [packages]
 docopt = "*"
 schema = "*"
+sh = "*"
+requests = "*"
 
 [dev-packages]
 
