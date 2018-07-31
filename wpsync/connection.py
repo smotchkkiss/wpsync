@@ -61,11 +61,17 @@ class FileConnection(Connection):
     def rmdir(self, path):
         shutil.rmtree(path)
 
-    def get(self, path):
+    def get(self, remote_path, local_path):
+        shutil.copyfile(remote_path, local_path)
+
+    def put(self, local_path, remote_path):
+        shutil.copyfile(local_path, remote_path)
+
+    def cat(self, path):
         with open(path, 'r') as f:
             return f.read()
 
-    def put(self, path, string):
+    def cat_r(self, path, string):
         with open(path, 'w') as f:
             return f.write(string)
 
@@ -92,10 +98,16 @@ class SSHConnection(Connection):
     def rmdir(self, path):
         self.ssh_do(f'rm -r {quote(path)}')
 
-    def get(self, path):
+    def get(self, remote_path, local_path):
+        scp(f'{self.user}@{self.host}:{quote(remote_path)}', local_path)
+
+    def put(self, local_path, remote_path):
+        scp(local_path, f'{self.user}@{self.host}:{quote(remote_path)}')
+
+    def cat(self, path):
         return self.ssh_do(f'cat {quote(path)}')
 
-    def put(self, path, string):
+    def cat_r(self, path, string):
         self.ssh_do(f'echo {quote(string)} > {quote(path)}')
 
     def rm(self, path):
@@ -125,10 +137,16 @@ class FTPConnection(Connection):
     def rmdir(self, path):
         self.ftp_do(f'rm -r {quote(path)}')
 
-    def get(self, path):
+    def get(self, remote_path, local_path):
+        self.ftp_do(f'get {quote(remote_path)} -o {quote(local_path)}')
+
+    def put(self, local_path, remote_path):
+        self.ftp_do(f'put {quote(local_path)} -o {quote(remote_path)}')
+
+    def cat(self, path):
         return self.ftp_do(f'cat {quote(path)}')
 
-    def put(self, path, string):
+    def cat_r(self, path, string):
         with NamedTemporaryFile() as tmp_file:
             tmp_file.write(string)
             self.ftp_do(f'put {quote(tmp_file.name)} -o {quote(path)}')
