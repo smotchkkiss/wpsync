@@ -78,8 +78,8 @@ def list_backups():
         site_names = [(site_name, config[site_name]['fs_safe_name'])]
     else:
         site_names = [(site, config[site]['fs_safe_name'])
-                        for site
-                        in config.keys()]
+                      for site
+                      in config.keys()]
     _list_backups(wpsyncdir, site_names, **options)
 
 
