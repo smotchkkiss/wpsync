@@ -7,12 +7,14 @@ Usage:
   wpsync [-v] [-c file] [-l] backup ((-d|-u|-p|-t)... | -a | -f) <source>
   wpsync [-v] [-c file] [-l] rollback [(-d|-u|-p|-t)... | -a | -f] [-b backup] [-s site]
   wpsync [-v] [-c file] [-l] list [(-d|-u|-p|-t)... | -a | -f] [-s site]
+  wpsync [-v] [-c file] [-l] install <site>
   wpsync -h | --help
   wpsync -V | --version
 
 Arguments:
   source  Name of a WordPress site from your config file
   dest    Name of a WordPress site from your config file
+  site    Name of a WordPress site from your config file
 
 Options:
   -h --help                  Output usage information.
@@ -46,8 +48,9 @@ from cli_helpers import (
     get_wpsyncdir,
 )
 from connection import connect
-from list_backups import list_backups as _list_backups
 from backup import backup as _backup
+from list_backups import list_backups as _list_backups
+from install import install as _install
 
 
 def sync():
@@ -83,6 +86,13 @@ def list_backups():
     _list_backups(wpsyncdir, site_names, **options)
 
 
+def install():
+    assert_site_exists(config, arguments['<site>'])
+    site = config[arguments['<site>']]
+    with connect(site) as connection:
+        _install(site, connection, arguments['--verbose'])
+
+
 if __name__ == '__main__':
     for executable_name in ['cat', 'lftp', 'rsync', 'ssh', 'scp']:
         check_required_executable(executable_name)
@@ -110,3 +120,5 @@ if __name__ == '__main__':
         rollback()
     elif arguments['list']:
         list_backups()
+    elif arguments['install']:
+        install()
