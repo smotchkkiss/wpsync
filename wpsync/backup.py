@@ -8,7 +8,7 @@ mysqldump_php_template = '''<?php
 
 include_once(__DIR__ . '/Mysqldump.php');
 
-try {
+try {{
 
     $dump = new Ifsnop\Mysqldump\Mysqldump(
         'mysql:host={mysql_host};dbname={mysql_name}',
@@ -22,7 +22,7 @@ try {
 
     $dump->start(__DIR__ . '/dump.sql');
 
-} catch (Exception $e) {
+}} catch (Exception $e) {{
 
     # try to write the error message to a file so we can
     # read it. no need to check the return value, though --
@@ -30,7 +30,7 @@ try {
     file_put_contents(__DIR__ . '/error.txt', $e->getMessage());
 
     http_response_code(500); # internal server error
-}
+}}
 '''
 
 
@@ -80,7 +80,7 @@ def backup(wpsyncdir, site, connection, verbose,
                 site['mysql_name']
             )
         else:
-            php_code = mysqldump_php_template.format(site)
+            php_code = mysqldump_php_template.format(**site)
             mysqldump_library_local = os.path.join(this_dir, 'Mysqldump.php')
             mysqldump_library_remote = connection.normalise('Mysqldump.php')
             connection.put(mysqldump_library_local, mysqldump_library_remote)
