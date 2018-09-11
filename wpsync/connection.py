@@ -72,11 +72,11 @@ class FileConnection(Connection):
 
     def mirror(self, remote_path, local_path):
         rsync('--recursive', '--del', '--compress',
-              remote_path + '/', local_path)
+              remote_path + '/', str(local_path))
 
     def mirror_r(self, local_path, remote_path):
         rsync('--recursive', '--del', '--compress',
-              local_path + '/', remote_path)
+              str(local_path) + '/', remote_path)
 
     def cat(self, path):
         with open(path, 'r') as f:
@@ -124,11 +124,11 @@ class SSHConnection(Connection):
     def mirror(self, remote_path, local_path):
         rsync('--recursive', '--del', '--compress',
               f'{self.user}@{self.host}:{quote(remote_path)}/',
-              local_path)
+              str(local_path))
 
     def mirror_r(self, local_path, remote_path):
         rsync('--recursive', '--del', '--compress',
-              local_path + '/',
+              str(local_path) + '/',
               f'{self.user}@{self.host}:{quote(remote_path)}')
 
     def cat(self, path):

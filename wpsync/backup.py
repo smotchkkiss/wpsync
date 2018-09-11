@@ -80,6 +80,8 @@ def backup(wpsyncdir, site, connection, verbose,
     if themes:
         backup_a_dir(backup_dir, site, connection, 'themes', verbose)
 
+    return fs_ts
+
 
 def backup_a_dir(backup_dir, site, connection, name, verbose):
     if verbose:

@@ -58,8 +58,16 @@ from install import install as _install
 def sync():
     assert_site_exists(config, arguments['<source>'])
     assert_site_exists(config, arguments['<dest>'])
-    if arguments['--verbose']:
-        print('SYNC')
+    source = config[arguments['<source>']]
+    dest = config[arguments['<dest>']]
+    with connect(source) as connection:
+        backup_id = _backup(wpsyncdir, source, connection,
+                            arguments['--verbose'], **options)
+    with connect(dest) as connection:
+        _backup(wpsyncdir, dest, connection,
+                arguments['--verbose'], **options)
+        _rollback(wpsyncdir, source, dest, connection, backup_id,
+                  arguments['--verbose'], **options)
 
 
 def backup():
@@ -74,6 +82,11 @@ def rollback():
     dest_site = None
     match = None
     backup_id = None
+
+    # TODO would it make sense to make it work, too, if the given
+    # --backup is *only* a site name (no timestamp) (and --site is
+    # also give, of course?) - we could use the last backup from
+    # the --backup site, then ...
 
     # if the --site argument is given, the user wanted it to be
     # the backup destination.
