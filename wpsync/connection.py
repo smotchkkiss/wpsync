@@ -24,10 +24,10 @@ def connect(site):
 class Connection:
     def __init__(self, site):
         self.site = site
-        self.wpsync_dir = os.path.join(site['base_dir'], 'wpsync')
+        self.wpsync_dir = site["base_dir"] + '/wpsync'
 
     def normalise(self, path):
-        return os.path.join(self.wpsync_dir, path)
+        return f'{self.wpsync_dir}/{path}'
 
     def make_wpsync_dir(self):
         self.mkdir(self.wpsync_dir)
@@ -175,7 +175,7 @@ class FTPConnection(Connection):
         self.ftp_do(f'put {quote(local_path)} -o {quote(remote_path)}')
 
     def mirror(self, remote_path, local_path):
-        wd = os.getcwd()
+        wd = Path.cwd()
         os.chdir(local_path)
         self.ftp_do(f'cd {quote(remote_path)}; mirror -P')
         os.chdir(wd)

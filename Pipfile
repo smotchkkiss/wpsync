@@ -8,6 +8,7 @@ docopt = "*"
 schema = "*"
 sh = "*"
 requests = "*"
+sqlparse = "*"
 
 [dev-packages]
 

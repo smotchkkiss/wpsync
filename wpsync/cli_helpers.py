@@ -169,7 +169,7 @@ def get_options(arguments):
         'uploads': bool(arguments['--uploads'] or arguments['--all']),
         'plugins': bool(arguments['--plugins'] or arguments['--all']),
         'themes': bool(arguments['--themes'] or arguments['--all']),
-        'full': arguments['--all'],
+        'full': arguments['--full'],
     }
 
 

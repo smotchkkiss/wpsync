@@ -37,7 +37,8 @@ Options:
 # A downside is that it will also accept multiple mentions, but I
 # think it's still better than spelling out the options like
 # (-d [-upt] | -u [-dpt] | -p [-dut] | -t [-dup])
-from pathlib import Path
+import sys
+import re
 from docopt import docopt
 from cli_helpers import (
     assert_site_exists,
@@ -49,6 +50,7 @@ from cli_helpers import (
 )
 from connection import connect
 from backup import backup as _backup
+from rollback import rollback as _rollback
 from list_backups import list_backups as _list_backups
 from install import install as _install
 
@@ -68,10 +70,84 @@ def backup():
 
 
 def rollback():
-    if arguments['--site'] is not None:
+    source_site = None
+    dest_site = None
+    match = None
+    backup_id = None
+
+    # if the --site argument is given, the user wanted it to be
+    # the backup destination.
+    if arguments['--site']:
         assert_site_exists(config, arguments['--site'])
-    if arguments['--verbose']:
-        print('ROLLBACK')
+        dest_site = config[arguments['--site']]
+
+    # if the --backup argument is given, the user wanted the
+    # backup with this particular id (and, optionally, from that
+    # particular source) to be rolled back.
+    if arguments['--backup']:
+        match = re.match(r'(.+@)?(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})',
+                         arguments['--backup'])
+        if not match:
+            print('Wrong backup id format.'
+                  ' It should look like [site@]yyyy-mm-ddThh:mm:ss')
+            sys.exit(1)
+        backup_id = match[2]
+
+    # if neither of --site and --backup are given, or --site is not
+    # given and the backup doesn't have the [site@] part, we can't
+    # determine which site to rollback to!
+    if not dest_site and (not match or not match[1]):
+        print('You must, at least, either provide a fully qualified'
+              ' backup id, or a site name')
+        sys.exit(1)
+
+    # if the dest_site wasn't given through the --site argument,
+    # we'll determine it from the backup id - that means the backup
+    # will be implicitly rolled back to the site it originally
+    # belongs to.
+    if not dest_site:
+        dest_site_name = match[1][:-1]
+        assert_site_exists(config, dest_site_name)
+        dest_site = config[dest_site_name]
+
+    # now let's determine the source site. if the backup_id has the
+    # [site@] portion, we'll use this as the source. if not, we'll
+    # use the same as the dest_site (given as --site).
+    if match and match[1]:
+        source_site_name = match[1][:-1]
+        assert_site_exists(config, source_site_name)
+        source_site = config[source_site_name]
+    else:
+        source_site = dest_site
+
+    # finally, if no backup_id is given, we'll try to use the last
+    # backup that was taken from the source site.
+    if not backup_id:
+        backup_dir = wpsyncdir / 'backups' / source_site['fs_safe_name']
+        try:
+            backup_id = sorted([b.name for b in backup_dir.iterdir()])[-1]
+        except FileNotFoundError as e:
+            print(f'There are no backups for {source_site["name"]}')
+            sys.exit(1)
+    # and if the backup_id came from the command line, we'll
+    # convert it to the filesystem-safe version.
+    else:
+        backup_id = backup_id.replace(':', '_')
+
+    # if no options are set, detect and use the options from the
+    # backup we're going to roll back.
+    if not any(options.values()):
+        backup_dir = (wpsyncdir / 'backups' / source_site['fs_safe_name'] /
+                      backup_id)
+        options['database'] = (backup_dir / 'database').is_dir()
+        options['uploads'] = (backup_dir / 'uploads').is_dir()
+        options['plugins'] = (backup_dir / 'plugins').is_dir()
+        options['themes'] = (backup_dir / 'themes').is_dir()
+        options['full'] = (backup_dir / 'full').is_dir()
+
+    with connect(dest_site) as connection:
+        _rollback(wpsyncdir, source_site, dest_site, connection, backup_id,
+                  arguments['--verbose'], **options)
 
 
 def list_backups():
