@@ -4,7 +4,7 @@ from shlex import quote
 from contextlib import contextmanager
 from tempfile import NamedTemporaryFile
 from subprocess import run
-from sh import lftp, rsync, ssh
+from sh import lftp, rsync, scp, ssh
 import requests
 
 

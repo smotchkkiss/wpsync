@@ -3,7 +3,7 @@ import json
 from shlex import quote
 
 
-# a class to check which executables exists on a host
+# a class to check which executables exist on a host
 class HostInfo:
     def __init__(self, wpsyncdir, site, connection):
         self.wpsyncdir = wpsyncdir
@@ -19,7 +19,7 @@ class HostInfo:
 
     def __getattr__(self, name):
         if name not in self.info:
-            res = self.connection.shell(f'which {quote(name)}')
+            res = self.connection.shell('which', quote(name))
             self.info[name] = name in res
             info_file = os.path.join(self.wpsyncdir, 'info',
                                      self.site['fs_safe_name'] + '.json')
