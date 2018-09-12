@@ -55,6 +55,92 @@ from list_backups import list_backups as _list_backups
 from install import install as _install
 
 
+# TODO:
+# - make the --full option work; auto-adapt wp-config.php
+# - on install, automatically create a .htaccess file, so the new
+#   WordPress is all set and ready to be synced into
+# - on connect, check if a WordPress actually exists at the site,
+#   and if not, maybe ask if the user wants to install one?
+# - don't crash if the wpsync dir already exists on connect, and
+#   generally be generous with existing/non-existing directories
+# - maybe even add a 'default' section to config where a username
+#   and password can be specified that will be used for new
+#   installations?
+# - check: did I actually implement maintenance mode? maintenance
+#   mode should be on, at least during database rollbacks - better
+#   during all backup and rollback activities!
+# - drop support for the 'theme' config key, it was a bad idea
+# - support databases with multiple installations or other stuff
+#   than wordpress in them, add an optional 'mysql_prefix'
+#   configuration option for that
+# - unify all php code together into one client.php so we only have
+#   to upload it once on connect
+# - maybe add an option to persistently install the client? (no!)
+# - make the client safer by using http simple auth with
+#   automatically, per-connection generated passwords
+# - support a new 'alias' configuration option for shorter,
+#   alternative site names for easier command line use
+# - would it somehow be possible to make [site] an optional
+#   argument to rollback (and not an option?)
+# - publish to PyPI and/or, preferably, homebrew!
+# - maybe refactor here and there for more consistent variable
+#   names (backup_id vs ts_fs, source_site and dest_site vs source
+#   and dest)
+#   refactor for less [positional] arguments
+# - check that we're running on the right python version (that
+#   would be 3.6+ I guess?) at startup
+# - check that we check that the local peer dependencies are
+#   installed (lftp and so on!) - or even better, maybe we can
+#   define those as dependencies in the homebrew formula? (but
+#   anyway, still check for them programmatically, please!)
+# - if things get too complex, maybe drop support for native
+#   mysql/mysqldump and focus on the PHP version, which should
+#   work everywhere!
+# - maybe update the PHP dependencies
+# - add support for (project-)local configuration files and local
+#   'wpsyncdir's in the respective location(s) - or find a way to
+#   uniquely identify sites, for example by base_url (or a
+#   filesystem-safe version of that), or a combination of the site
+#   name and the path of the configuration file it belongs to ...
+# - normalise config options like base_url to make sure they don't
+#   have a trailing slash or trailing whitespace for example, or
+#   hint the user towards it!
+# - generally validate the config better
+# - randomise the server side dir name for better security (but
+#   make sure to remove it!)
+# - what if more people are syncing the same site at the same time?
+#   add individual ids or detect the other folders, e.g. by a
+#   common ('wpsync-') prefix, so only the last one leaving removes
+#   the maintenance file?
+#   or maybe better, do nothing and wait until the others are
+#   done - this may wait forever in case a wpsync dir is left over
+#   from a crash! we should warn the user about this and advise how
+#   to manually remove the old wpsync directories.
+# - add a 'clean' command or something to remove old backups
+# - add another 'clean' command that removes old wpsync dirs from
+#   servers
+# - but by all means try to remove the wpsync dir, maybe with a
+#   python atexit hook or something that will run in almost every
+#   case except for power outage or sudden connection loss or
+#   something ... and in case of the connection loss, maybe still
+#   write the name of the wpsync dir to a list of stale wpsync dirs
+#   in the host info file so we know we can remove it next time?
+# - maybe change the rollback cli to [backup] [site] and, if both
+#   are given, try to detect if [backup] is a backup_id or a site,
+#   and so on ... ?
+# - make verbose the default, remove the --verbose option, add a
+#   --quiet option instead, and make the output prettier, maybe
+#   with progress bars or spinners!
+# - parallelise stuff, probably with asyncio
+# - test wether everything works over each connection type
+# - require particular (min/max?) versions of external dependencies
+#   (like lftp and so on) and check that compatible versions are
+#   installed. (if wpsync is published to homebrew they may even be
+#   listed in the formula and installed automatically, but I think
+#   that it has to be the latest version available on homebrew,
+#   then.)
+
+
 def sync():
     assert_site_exists(config, arguments['<source>'])
     assert_site_exists(config, arguments['<dest>'])
