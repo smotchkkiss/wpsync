@@ -63,10 +63,11 @@ def backup(wpsyncdir, site, connection, verbose,
             php_code = mysqldump_php_template.format(**site)
             mysqldump_library_local = this_dir / 'Mysqldump.php'
             mysqldump_library_remote = connection.normalise('Mysqldump.php')
-            connection.put(mysqldump_library_local, mysqldump_library_remote)
+            connection.put(str(mysqldump_library_local.resolve()),
+                           mysqldump_library_remote)
             connection.run_php(php_code)
             connection.rm(mysqldump_library_remote)
-        connection.get(remote_dump_file, local_dump_file)
+        connection.get(remote_dump_file, str(local_dump_file.resolve()))
         connection.rm(remote_dump_file)
         if verbose:
             print('DONE')
@@ -94,6 +95,6 @@ def backup_a_dir(backup_dir, site, connection, name, verbose):
                   ' creating it')
         connection.mkdir(remote_dir)
     local_dir.mkdir(mode=0o755, parents=True, exist_ok=True)
-    connection.mirror(remote_dir, local_dir)
+    connection.mirror(remote_dir, str(local_dir.resolve()))
     if verbose:
         print('DONE')

@@ -3,6 +3,7 @@ import shutil
 from shlex import quote
 from contextlib import contextmanager
 from tempfile import NamedTemporaryFile
+from pathlib import Path
 from subprocess import run
 from sh import lftp, rsync, scp, ssh
 import requests
@@ -21,13 +22,20 @@ def connect(site):
     connection.remove_wpsync_dir()
 
 
+# a helper function for dealing with different forms of paths
+def s(path):
+    if type(path) == str:
+        return path
+    return str(path.resolve())
+
+
 class Connection:
     def __init__(self, site):
         self.site = site
         self.wpsync_dir = site["base_dir"] + '/wpsync'
 
     def normalise(self, path):
-        return f'{self.wpsync_dir}/{path}'
+        return f'{self.wpsync_dir}/{s(path)}'
 
     def make_wpsync_dir(self):
         self.mkdir(self.wpsync_dir)
@@ -72,11 +80,11 @@ class FileConnection(Connection):
 
     def mirror(self, remote_path, local_path):
         rsync('--recursive', '--del', '--compress',
-              remote_path + '/', str(local_path))
+              remote_path + '/', s(local_path))
 
     def mirror_r(self, local_path, remote_path):
         rsync('--recursive', '--del', '--compress',
-              str(local_path) + '/', remote_path)
+              s(local_path) + '/', remote_path)
 
     def cat(self, path):
         with open(path, 'r') as f:
@@ -106,39 +114,39 @@ class SSHConnection(Connection):
         return ssh(f'{self.user}@{self.host}', command)
 
     def dir_exists(self, path):
-        res = self.ssh_do(f'test -d {quote(path)} && echo yes')
+        res = self.ssh_do(f'test -d {quote(s(path))} && echo yes')
         return 'yes' in res
 
     def mkdir(self, path):
-        self.ssh_do(f'mkdir {quote(path)}')
+        self.ssh_do(f'mkdir {quote(s(path))}')
 
     def rmdir(self, path):
-        self.ssh_do(f'rm -r {quote(path)}')
+        self.ssh_do(f'rm -r {quote(s(path))}')
 
     def get(self, remote_path, local_path):
-        scp(f'{self.user}@{self.host}:{quote(remote_path)}', local_path)
+        scp(f'{self.user}@{self.host}:{quote(s(remote_path))}', s(local_path))
 
     def put(self, local_path, remote_path):
-        scp(local_path, f'{self.user}@{self.host}:{quote(remote_path)}')
+        scp(local_path, f'{self.user}@{self.host}:{quote(s(remote_path))}')
 
     def mirror(self, remote_path, local_path):
         rsync('--recursive', '--del', '--compress',
-              f'{self.user}@{self.host}:{quote(remote_path)}/',
-              str(local_path))
+              f'{self.user}@{self.host}:{quote(s(remote_path))}/',
+              s(local_path))
 
     def mirror_r(self, local_path, remote_path):
         rsync('--recursive', '--del', '--compress',
-              str(local_path) + '/',
-              f'{self.user}@{self.host}:{quote(remote_path)}')
+              s(local_path) + '/',
+              f'{self.user}@{self.host}:{quote(s(remote_path))}')
 
     def cat(self, path):
-        return self.ssh_do(f'cat {quote(path)}')
+        return self.ssh_do(f'cat {quote(s(path))}')
 
     def cat_r(self, path, string):
-        self.ssh_do(f'echo {quote(string)} > {quote(path)}')
+        self.ssh_do(f'echo {quote(string)} > {quote(s(path))}')
 
     def rm(self, path):
-        self.ssh_do(f'rm {quote(path)}')
+        self.ssh_do(f'rm {quote(s(path))}')
 
     def shell(self, *command):
         return self.ssh_do(' '.join(map(quote, command)))
@@ -159,40 +167,40 @@ class FTPConnection(Connection):
 
     def dir_exists(self, path):
         path = path[:-1] + '[' + path[-1] + ']'
-        res = self.ftp_do(f'glob --exist -d {quote(path)} && echo yes')
+        res = self.ftp_do(f'glob --exist -d {quote(s(path))} && echo yes')
         return 'yes' in res
 
     def mkdir(self, path):
-        self.ftp_do(f'mkdir -p {quote(path)}')
+        self.ftp_do(f'mkdir -p {quote(s(path))}')
 
     def rmdir(self, path):
-        self.ftp_do(f'rm -r {quote(path)}')
+        self.ftp_do(f'rm -r {quote(s(path))}')
 
     def get(self, remote_path, local_path):
-        self.ftp_do(f'get {quote(remote_path)} -o {quote(local_path)}')
+        self.ftp_do(f'get {quote(s(remote_path))} -o {quote(s(local_path))}')
 
     def put(self, local_path, remote_path):
-        self.ftp_do(f'put {quote(local_path)} -o {quote(remote_path)}')
+        self.ftp_do(f'put {quote(s(local_path))} -o {quote(s(remote_path))}')
 
     def mirror(self, remote_path, local_path):
-        wd = Path.cwd()
-        os.chdir(local_path)
-        self.ftp_do(f'cd {quote(remote_path)}; mirror -P')
-        os.chdir(wd)
+        cmd = 'mirror --parallel --delete'
+        self.ftp_do(f'{cmd} {quote(s(remote_path))} {quote(s(local_path))}')
 
     def mirror_r(self, local_path, remote_path):
-        self.ftp_do(f'mirror -epR {quote(local_path)} {quote(remote_path)}')
+        cmd = 'mirror --parallel --delete -R'
+        self.ftp_do(f'{cmd} {quote(s(local_path))} {quote(s(remote_path))}')
 
     def cat(self, path):
-        return self.ftp_do(f'cat {quote(path)}')
+        return self.ftp_do(f'cat {quote(s(path))}')
 
     def cat_r(self, path, string):
-        with NamedTemporaryFile() as tmp_file:
-            tmp_file.write(string)
-            self.ftp_do(f'put {quote(tmp_file.name)} -o {quote(path)}')
+        tmp_file = Path(NamedTemporaryFile().name)
+        tmp_file.write_text(string, encoding='utf-8')
+        self.ftp_do(f'put {quote(s(tmp_file))} -o {quote(s(path))}')
+        tmp_file.unlink()
 
     def rm(self, path):
-        self.ftp_do(f'rm {quote(path)}')
+        self.ftp_do(f'rm {quote(s(path))}')
 
     def shell(self, *command):
         cmd = ' '.join(map(quote, command)).replace("'", "\\'")
