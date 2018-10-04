@@ -136,7 +136,11 @@ def rollback_a_dir(backup_dir, dest, connection, name, verbose):
     if verbose:
         print(f'Rolling back {name} ... ', end='', flush=True)
     local_dir = backup_dir / name
-    remote_dir = f'{dest["base_dir"]}/wp-content/{name}'
+    if dest['base_dir']:
+        base = dest['base_dir'] + '/'
+    else:
+        base = ''
+    remote_dir = f'{base}wp-content/{name}'
     if not connection.dir_exists(remote_dir):
         if verbose:
             print(f'\nwp-content/{name} doesn\'t exist on {dest["name"]},' +
