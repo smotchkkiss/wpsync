@@ -164,7 +164,8 @@ def normalize_config(config):
         # make sure urls and probably other fields have no trailing
         # or leading whitespace, or at least warn about it
         # also make sure urls are basically valid
-        if site['base_dir'] and site['base_dir'][0] == '/':
+        # also TODO make the following line shorter
+        if site['protocol'] == 'ftp' and site['base_dir'] and site['base_dir'][0] == '/':
             print(
                 f'WARNING:' +
                 ' base_dir for {site_name} is configured as {};'
