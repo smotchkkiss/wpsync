@@ -64,7 +64,7 @@ def validate_config(config):
     schema = Schema({str: Or({
         # localhost without http basic auth
         'protocol': 'file',
-        Optional('name'): str, # for compatibility, will be ignored
+        Optional('name'): str,  # for compatibility, will be ignored
         'base_url': str,
         'base_dir': str,
         Optional('theme'): str,
@@ -76,7 +76,7 @@ def validate_config(config):
         # localhost with http basic auth
         # (why would that be needed?!)
         'protocol': 'file',
-        Optional('name'): str, # for compatibility, will be ignored
+        Optional('name'): str,  # for compatibility, will be ignored
         'base_url': str,
         'base_dir': str,
         Optional('theme'): str,
@@ -89,7 +89,7 @@ def validate_config(config):
     }, {
         # FTP hosts without http basic auth
         'protocol': 'ftp',
-        Optional('name'): str, # for compatibility, will be ignored
+        Optional('name'): str,  # for compatibility, will be ignored
         'base_url': str,
         'base_dir': str,
         'user': str,
@@ -103,7 +103,7 @@ def validate_config(config):
     }, {
         # FTP hosts with http basic auth
         'protocol': 'ftp',
-        Optional('name'): str, # for compatibility, will be ignored
+        Optional('name'): str,  # for compatibility, will be ignored
         'base_url': str,
         'base_dir': str,
         'user': str,
@@ -119,7 +119,7 @@ def validate_config(config):
     }, {
         # SSH hosts without http basic auth
         'protocol': Or('ssh', 'sftp'),
-        Optional('name'): str, # for compatibility, will be ignored
+        Optional('name'): str,  # for compatibility, will be ignored
         'base_url': str,
         'base_dir': str,
         'user': str,
@@ -133,7 +133,7 @@ def validate_config(config):
     }, {
         # SSH hosts with http basic auth
         'protocol': Or('ssh', 'sftp'),
-        Optional('name'): str, # for compatibility, will be ignored
+        Optional('name'): str,  # for compatibility, will be ignored
         'base_url': str,
         'base_dir': str,
         'user': str,
