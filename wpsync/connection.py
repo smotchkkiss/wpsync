@@ -32,11 +32,7 @@ def s(path):
 class Connection:
     def __init__(self, site):
         self.site = site
-        if site['base_dir']:
-            self.wpsync_dir = site['base_dir'] + '/'
-        else:
-            self.wpsync_dir = ''
-        self.wpsync_dir += 'wpsync'
+        self.wpsync_dir = site['base_dir'] + 'wpsync'
 
     def normalise(self, path):
         return f'{self.wpsync_dir}/{s(path)}'

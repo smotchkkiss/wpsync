@@ -49,7 +49,9 @@ def get_config(path):
         try:
             with open(p, 'r') as config_file:
                 config.read_string(config_file.read())
-                return (validate_config(config._sections), p)
+                valid_config = validate_config(config._sections)
+                normalized_config = normalize_config(valid_config)
+                return (normalized_config, p)
         except FileNotFoundError as e:
             pass
 
@@ -153,6 +155,28 @@ def validate_config(config):
         print('An error occured while validating the configuration:')
         print(e)
         sys.exit(1)
+
+
+def normalize_config(config):
+    for site_name in config:
+        site = config[site_name]
+        # TODO:
+        # make sure urls and probably other fields have no trailing
+        # or leading whitespace, or at least warn about it
+        # also make sure urls are basically valid
+        if site['base_dir'] and site['base_dir'][0] == '/':
+            print(
+                f'WARNING:' +
+                ' base_dir for {site_name} is configured as {};'
+                ' Did you mean to supply an absolute path?'
+            )
+        if site['base_dir'] and site['base_dir'][-1] != '/':
+            site['base_dir'] += '/'
+        if site['protocol'] == 'sftp':
+            site['protocol'] = 'ftp'
+            site['pass'] = ''
+            site['host'] = 'sftp://' + site['host']
+    return config
 
 
 def get_wpsyncdir(config_path):

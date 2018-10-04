@@ -81,11 +81,7 @@ def backup_a_dir(backup_dir, site, connection, name, verbose):
     if verbose:
         print(f'Backing up {name} ... ', end='', flush=True)
     local_dir = backup_dir / name
-    if site['base_dir']:
-        base = base_dir + '/'
-    else:
-        base = ''
-    remote_dir = f'{base}wp-content/{name}'
+    remote_dir = f'{site["base_dir"]}wp-content/{name}'
     if not connection.dir_exists(remote_dir):
         if verbose:
             print(f'\bwp-content/{name} doesn\'t exist on {site["name"]},' +
