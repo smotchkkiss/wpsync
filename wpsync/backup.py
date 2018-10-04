@@ -49,24 +49,17 @@ def backup(wpsyncdir, site, connection, verbose,
         local_dump_file = database_backup_dir / 'dump.sql'
         remote_dump_file = connection.normalise('dump.sql')
         database_backup_dir.mkdir(mode=0o755, parents=True, exist_ok=True)
-        if host.has_executable('mysqldump'):
-            connection.shell(
-                'mysqldump',
-                '--skip-extended-insert',
-                '--quick',
-                '--default-character-set=utf8',
-                '-r',
-                remote_dump_file,
-                site['mysql_name']
-            )
-        else:
-            php_code = mysqldump_php_template.format(**site)
-            mysqldump_library_local = this_dir / 'Mysqldump.php'
-            mysqldump_library_remote = connection.normalise('Mysqldump.php')
-            connection.put(str(mysqldump_library_local.resolve()),
-                           mysqldump_library_remote)
-            connection.run_php(php_code)
-            connection.rm(mysqldump_library_remote)
+
+        php_code = mysqldump_php_template.format(**site)
+        mysqldump_library_local = this_dir / 'Mysqldump.php'
+        mysqldump_library_remote = connection.normalise('Mysqldump.php')
+        connection.put(str(mysqldump_library_local.resolve()),
+                       mysqldump_library_remote)
+        # TODO Connection#run_php returns the response text, do
+        # something with it?
+        connection.run_php(php_code)
+        connection.rm(mysqldump_library_remote)
+
         connection.get(remote_dump_file, str(local_dump_file.resolve()))
         connection.rm(remote_dump_file)
         if verbose:

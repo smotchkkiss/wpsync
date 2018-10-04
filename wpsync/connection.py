@@ -97,12 +97,6 @@ class FileConnection(Connection):
     def rm(self, path):
         os.remove(path)
 
-    def shell(self, *command):
-        process = run(command, check=True, capture_output=True)
-        out = process.stdout.decode('utf-8')
-        err = process.stderr.decode('utf-8')
-        return out + '\n' + err
-
 
 class SSHConnection(Connection):
     def __init__(self, site):
@@ -147,9 +141,6 @@ class SSHConnection(Connection):
 
     def rm(self, path):
         self.ssh_do(f'rm {quote(s(path))}')
-
-    def shell(self, *command):
-        return self.ssh_do(' '.join(map(quote, command)))
 
 
 class FTPConnection(Connection):
@@ -201,9 +192,3 @@ class FTPConnection(Connection):
 
     def rm(self, path):
         self.ftp_do(f'rm {quote(s(path))}')
-
-    def shell(self, *command):
-        cmd = ' '.join(map(quote, command)).replace("'", "\\'")
-        php_code = f'<?php system(\'{cmd}\');'
-        print(php_code)
-        return self.run_php(php_code)

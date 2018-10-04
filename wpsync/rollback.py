@@ -100,24 +100,14 @@ def rollback_database(source, dest, connection, backup_dir, host, verbose):
     remote_dump_file = connection.normalise('dump.sql')
     connection.put(dump_file, remote_dump_file)
 
-    if host.has_executable('mysql'):
-        connection.shell(
-            'mysql',
-            '-e',
-            'use {}; source {};'.format(
-                quote(dest['mysql_name']),
-                quote(remote_dump_file)
-            )
-        )
-    else:
-        php_code = mysqlsource_php_template.format(**dest)
-        mysqlimport_library_local = this_dir / 'import-sql-database-mysql.php'
-        mysqlimport_library_remote = connection.normalise(
-            'import-sql-database-mysql.php'
-        )
-        connection.put(mysqlimport_library_local, mysqlimport_library_remote)
-        connection.run_php(php_code)
-        connection.rm(mysqlimport_library_remote)
+    php_code = mysqlsource_php_template.format(**dest)
+    mysqlimport_library_local = this_dir / 'import-sql-database-mysql.php'
+    mysqlimport_library_remote = connection.normalise(
+        'import-sql-database-mysql.php'
+    )
+    connection.put(mysqlimport_library_local, mysqlimport_library_remote)
+    connection.run_php(php_code)
+    connection.rm(mysqlimport_library_remote)
 
     connection.rm(remote_dump_file)
 

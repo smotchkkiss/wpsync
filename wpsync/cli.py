@@ -141,10 +141,6 @@ from install import install as _install
 #   then.)
 # - detect when a host uses http auth but it isn't configured
 #   (401 Unauthorized) and show a meaningful error message
-# - scrap native mysqldump etc. (seriously!) && only run PHP on
-#   remote hosts, it's more reliable && makes this program much
-#   simpler as we don't have to maintain 2 different ways of doing
-#   things
 
 
 def sync():

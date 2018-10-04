@@ -16,16 +16,6 @@ class HostInfo:
         except FileNotFoundError:
             self.info = {}
 
-    def has_executable(self, name):
-        if 'executables' not in self.info:
-            self.info['executables'] = {}
-        if name not in self.info['executables']:
-            res = self.connection.shell('which', name)
-            self.info['executables'][name] = name in res
-            with open(self.info_file, 'w') as f:
-                json.dump(self.info, f)
-        return self.info['executables'][name]
-
     def get_database_settings(self):
         if 'database' not in self.info:
             site_backup_dir = (self.wpsyncdir / 'backups' /
