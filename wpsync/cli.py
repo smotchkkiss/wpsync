@@ -3,11 +3,11 @@
 Synchronise WordPress sites across ssh, (s)ftp and local hosts
 
 Usage:
-  wpsync [-q] [-c file] [-l] sync ((-d|-u|-p|-t)... | -a | -f) <source> <dest>
-  wpsync [-q] [-c file] [-l] backup ((-d|-u|-p|-t)... | -a | -f) <source>
-  wpsync [-q] [-c file] [-l] rollback [(-d|-u|-p|-t)... | -a | -f] [-b backup] [-s site]
-  wpsync [-q] [-c file] [-l] list [(-d|-u|-p|-t)... | -a | -f] [-s site]
-  wpsync [-q] [-c file] [-l] install <site>
+  wpsync [-q] [-c file] [-l] (sync|s) ((-d|-u|-p|-t)... | -a | -f) <source> <dest>
+  wpsync [-q] [-c file] [-l] (backup|b) ((-d|-u|-p|-t)... | -a | -f) <source>
+  wpsync [-q] [-c file] [-l] (rollback|r) [(-d|-u|-p|-t)... | -a | -f] [-b backup] [-s site]
+  wpsync [-q] [-c file] [-l] (list|l) [(-d|-u|-p|-t)... | -a | -f] [-s site]
+  wpsync [-q] [-c file] [-l] (install|i) <site>
   wpsync -h | --help
   wpsync -V | --version
 
@@ -289,13 +289,13 @@ if __name__ == '__main__':
         config[site]['name'] = site
         config[site]['fs_safe_name'] = encode_site_name(site)
 
-    if arguments['sync']:
+    if arguments['sync'] or arguments['s']:
         sync()
-    elif arguments['backup']:
+    elif arguments['backup'] or arguments['b']:
         backup()
-    elif arguments['rollback']:
+    elif arguments['rollback'] or arguments['r']:
         rollback()
-    elif arguments['list']:
+    elif arguments['list'] or arguments['l']:
         list_backups()
-    elif arguments['install']:
+    elif arguments['install'] or arguments['i']:
         install()
