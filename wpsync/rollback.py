@@ -4,6 +4,7 @@ from pathlib import Path
 from shlex import quote
 import sqlparse
 from host_info import HostInfo
+import put
 
 
 this_dir = Path(__file__).resolve().parent
@@ -60,6 +61,12 @@ def rollback(wpsyncdir, source, dest, connection, fs_ts, quiet,
     host = HostInfo(wpsyncdir, dest, connection)
     backup_dir = wpsyncdir / 'backups' / source['fs_safe_name'] / fs_ts
 
+    if not quiet:
+        what = source["name"] + '@' + fs_ts.replace('_', ':')
+        if source != dest:
+            what += ' to ' + dest["name"]
+        put.title(f'Rolling back {what}')
+
     if database:
         rollback_database(source, dest, connection, backup_dir, host, quiet)
 
@@ -76,20 +83,20 @@ def rollback(wpsyncdir, source, dest, connection, fs_ts, quiet,
 def rollback_database(source, dest, connection, backup_dir, host, quiet):
     dump_file = backup_dir / 'database' / 'dump.sql'
     if not dump_file.is_file():
-        print('Database is not contained in this backup')
+        put.error('Database is not contained in this backup')
         return
     if not quiet:
-        print('Rolling back database ... ', end='', flush=True)
+        put.step('Rolling back database')
 
     if dest != source:
         if not quiet:
-            print('\nRollback source and target are different sites -'
-                  '\nAltering database dump to match target settings')
+            put.info('Rollback source and target are different sites -'
+                     '\n  Altering database dump to match target settings')
         try:
             db_settings = host.get_database_settings()
         except RuntimeError as e:
-            print(f'Error: {e}')
-            print(f'Create a backup for {dest["name"]} first!')
+            put.error(f'Error: {e}' +
+                      '\n  Create a backup for {dest["name"]} first!')
             sys.exit(1)
         temp_dump_file = Path(NamedTemporaryFile().name)
         replace_in_database_dump(dump_file, temp_dump_file, db_settings)
@@ -116,7 +123,7 @@ def rollback_database(source, dest, connection, backup_dir, host, quiet):
 
     if dest != source:
         if not quiet:
-            print('Replacing urls in the database')
+            put.step('Replacing urls in the database')
         # TODO:
         # escape quotes in all strings formatted into php
         # templates!
@@ -128,23 +135,18 @@ def rollback_database(source, dest, connection, backup_dir, host, quiet):
         connection.run_php(php_code)
         connection.rm(mysqlreplace_library_remote)
 
-    if not quiet:
-        print('DONE')
-
 
 def rollback_a_dir(backup_dir, dest, connection, name, quiet):
     if not quiet:
-        print(f'Rolling back {name} ... ', end='', flush=True)
+        put.step(f'Rolling back {name}')
     local_dir = backup_dir / name
     remote_dir = f'{dest["base_dir"]}wp-content/{name}'
     if not connection.dir_exists(remote_dir):
         if not quiet:
-            print(f'\nwp-content/{name} doesn\'t exist on {dest["name"]},' +
-                  ' creating it')
+            put.info(f'wp-content/{name} doesn\'t exist on {dest["name"]},' +
+                     ' creating it')
         connection.mkdir(remote_dir)
     connection.mirror_r(local_dir, remote_dir)
-    if not quiet:
-        print('DONE')
 
 
 def replace_in_database_dump(in_file, out_file, to_set):

@@ -53,6 +53,7 @@ from backup import backup as _backup
 from rollback import rollback as _rollback
 from list_backups import list_backups as _list_backups
 from install import install as _install
+import put
 
 
 # TODO:
@@ -128,9 +129,9 @@ from install import install as _install
 # - maybe change the rollback cli to [backup] [site] and, if both
 #   are given, try to detect if [backup] is a backup_id or a site,
 #   and so on ... ?
-# - make the output prettier, maybe with progress bars or spinners!
-#   for starters, we could just show the default lftp output if not
-#   quiet, and probably the output of other external tools, too.
+# - add waiting spinners on steps?
+# - maybe add a verbose option again and make it show very verbose
+#   output of lftp, rsync and other external tools
 # - parallelise stuff, probably with asyncio
 # - test wether everything works over each connection type
 # - require particular (min/max?) versions of external dependencies
@@ -189,8 +190,8 @@ def rollback():
         match = re.match(r'(.+@)?(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})',
                          arguments['--backup'])
         if not match:
-            print('Wrong backup id format.'
-                  ' It should look like [site@]yyyy-mm-ddThh:mm:ss')
+            put.error('Wrong backup id format.'
+                      ' It should look like [site@]yyyy-mm-ddThh:mm:ss')
             sys.exit(1)
         backup_id = match[2]
 
@@ -198,8 +199,8 @@ def rollback():
     # given and the backup doesn't have the [site@] part, we can't
     # determine which site to rollback to!
     if not dest_site and (not match or not match[1]):
-        print('You must, at least, either provide a fully qualified'
-              ' backup id, or a site name')
+        put.error('You must, at least, either provide a fully qualified'
+                  ' backup id, or a site name')
         sys.exit(1)
 
     # if the dest_site wasn't given through the --site argument,
@@ -228,7 +229,7 @@ def rollback():
         try:
             backup_id = sorted([b.name for b in backup_dir.iterdir()])[-1]
         except FileNotFoundError as e:
-            print(f'There are no backups for {source_site["name"]}')
+            put.error(f'There are no backups for {source_site["name"]}')
             sys.exit(1)
     # and if the backup_id came from the command line, we'll
     # convert it to the filesystem-safe version.
@@ -299,3 +300,6 @@ if __name__ == '__main__':
         list_backups()
     elif arguments['install'] or arguments['i']:
         install()
+
+    if not arguments['--quiet']:
+        put.success('DONE')

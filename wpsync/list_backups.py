@@ -1,3 +1,6 @@
+import put
+
+
 def list_backups(wpsyncdir, site_names,
                  database, uploads, plugins, themes, full):
     is_single = len(site_names) == 1
@@ -27,4 +30,4 @@ def list_backups(wpsyncdir, site_names,
                     print(backup_title)
         except FileNotFoundError as e:
             if is_single:
-                print(f'There are no backups for {site_name}.')
+                put.error(f'There are no backups for {site_name}.')

@@ -9,6 +9,7 @@ schema = "*"
 sh = "*"
 requests = "*"
 sqlparse = "*"
+crayons = "*"
 
 [dev-packages]
 

@@ -1,3 +1,6 @@
+import put
+
+
 # curly braces in php template are doubled to escape them
 # (otherwise python will interpret them as replacement field
 # delimiters)
@@ -137,11 +140,9 @@ function starts_with ($haystack, $needle) {{
 
 def install(site, connection, quiet):
     if not quiet:
-        print(f'Installing new WordPress for {site["name"]}')
+        put.title(f'Installing new WordPress for {site["name"]}')
     # TODO:
     # check if there's already a WordPress at the site, and if so,
     # ask the user if they want to replace it.
     php_code = wpinstall_php_template.format(**site)
     connection.run_php(php_code)
-    if not quiet:
-        print('DONE')
