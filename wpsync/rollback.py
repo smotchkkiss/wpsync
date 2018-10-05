@@ -55,34 +55,34 @@ if (!$report || !empty($report->errors['results'])) {{
 '''
 
 
-def rollback(wpsyncdir, source, dest, connection, fs_ts, verbose,
+def rollback(wpsyncdir, source, dest, connection, fs_ts, quiet,
              database, uploads, plugins, themes, full):
     host = HostInfo(wpsyncdir, dest, connection)
     backup_dir = wpsyncdir / 'backups' / source['fs_safe_name'] / fs_ts
 
     if database:
-        rollback_database(source, dest, connection, backup_dir, host, verbose)
+        rollback_database(source, dest, connection, backup_dir, host, quiet)
 
     if uploads:
-        rollback_a_dir(backup_dir, dest, connection, 'uploads', verbose)
+        rollback_a_dir(backup_dir, dest, connection, 'uploads', quiet)
 
     if plugins:
-        rollback_a_dir(backup_dir, dest, connection, 'plugins', verbose)
+        rollback_a_dir(backup_dir, dest, connection, 'plugins', quiet)
 
     if themes:
-        rollback_a_dir(backup_dir, dest, connection, 'themes', verbose)
+        rollback_a_dir(backup_dir, dest, connection, 'themes', quiet)
 
 
-def rollback_database(source, dest, connection, backup_dir, host, verbose):
+def rollback_database(source, dest, connection, backup_dir, host, quiet):
     dump_file = backup_dir / 'database' / 'dump.sql'
     if not dump_file.is_file():
         print('Database is not contained in this backup')
         return
-    if verbose:
+    if not quiet:
         print('Rolling back database ... ', end='', flush=True)
 
     if dest != source:
-        if verbose:
+        if not quiet:
             print('\nRollback source and target are different sites -'
                   '\nAltering database dump to match target settings')
         try:
@@ -115,7 +115,7 @@ def rollback_database(source, dest, connection, backup_dir, host, verbose):
         temp_dump_file.unlink()
 
     if dest != source:
-        if verbose:
+        if not quiet:
             print('Replacing urls in the database')
         # TODO:
         # escape quotes in all strings formatted into php
@@ -128,22 +128,22 @@ def rollback_database(source, dest, connection, backup_dir, host, verbose):
         connection.run_php(php_code)
         connection.rm(mysqlreplace_library_remote)
 
-    if verbose:
+    if not quiet:
         print('DONE')
 
 
-def rollback_a_dir(backup_dir, dest, connection, name, verbose):
-    if verbose:
+def rollback_a_dir(backup_dir, dest, connection, name, quiet):
+    if not quiet:
         print(f'Rolling back {name} ... ', end='', flush=True)
     local_dir = backup_dir / name
     remote_dir = f'{dest["base_dir"]}wp-content/{name}'
     if not connection.dir_exists(remote_dir):
-        if verbose:
+        if not quiet:
             print(f'\nwp-content/{name} doesn\'t exist on {dest["name"]},' +
                   ' creating it')
         connection.mkdir(remote_dir)
     connection.mirror_r(local_dir, remote_dir)
-    if verbose:
+    if not quiet:
         print('DONE')
 
 

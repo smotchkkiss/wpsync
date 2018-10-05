@@ -3,11 +3,11 @@
 Synchronise WordPress sites across ssh, (s)ftp and local hosts
 
 Usage:
-  wpsync [-v] [-c file] [-l] sync ((-d|-u|-p|-t)... | -a | -f) <source> <dest>
-  wpsync [-v] [-c file] [-l] backup ((-d|-u|-p|-t)... | -a | -f) <source>
-  wpsync [-v] [-c file] [-l] rollback [(-d|-u|-p|-t)... | -a | -f] [-b backup] [-s site]
-  wpsync [-v] [-c file] [-l] list [(-d|-u|-p|-t)... | -a | -f] [-s site]
-  wpsync [-v] [-c file] [-l] install <site>
+  wpsync [-q] [-c file] [-l] sync ((-d|-u|-p|-t)... | -a | -f) <source> <dest>
+  wpsync [-q] [-c file] [-l] backup ((-d|-u|-p|-t)... | -a | -f) <source>
+  wpsync [-q] [-c file] [-l] rollback [(-d|-u|-p|-t)... | -a | -f] [-b backup] [-s site]
+  wpsync [-q] [-c file] [-l] list [(-d|-u|-p|-t)... | -a | -f] [-s site]
+  wpsync [-q] [-c file] [-l] install <site>
   wpsync -h | --help
   wpsync -V | --version
 
@@ -19,7 +19,7 @@ Arguments:
 Options:
   -h --help                  Output usage information.
   -V --version               Output version number.
-  -v --verbose               Print what you're doing.
+  -q --quiet                 Don't print anything to STDOUT.
   -c file --config=file      Use the config file specified.
   -l --legacy                Use old name field instead of config section headers.
   -b backup --backup=backup  ID of a specific backup to use.
@@ -128,9 +128,9 @@ from install import install as _install
 # - maybe change the rollback cli to [backup] [site] and, if both
 #   are given, try to detect if [backup] is a backup_id or a site,
 #   and so on ... ?
-# - make verbose the default, remove the --verbose option, add a
-#   --quiet option instead, and make the output prettier, maybe
-#   with progress bars or spinners!
+# - make the output prettier, maybe with progress bars or spinners!
+#   for starters, we could just show the default lftp output if not
+#   quiet, and probably the output of other external tools, too.
 # - parallelise stuff, probably with asyncio
 # - test wether everything works over each connection type
 # - require particular (min/max?) versions of external dependencies
@@ -150,19 +150,19 @@ def sync():
     dest = config[arguments['<dest>']]
     with connect(source) as connection:
         backup_id = _backup(wpsyncdir, source, connection,
-                            arguments['--verbose'], **options)
+                            arguments['--quiet'], **options)
     with connect(dest) as connection:
         _backup(wpsyncdir, dest, connection,
-                arguments['--verbose'], **options)
+                arguments['--quiet'], **options)
         _rollback(wpsyncdir, source, dest, connection, backup_id,
-                  arguments['--verbose'], **options)
+                  arguments['--quiet'], **options)
 
 
 def backup():
     assert_site_exists(config, arguments['<source>'])
     site = config[arguments['<source>']]
     with connect(site) as connection:
-        _backup(wpsyncdir, site, connection, arguments['--verbose'], **options)
+        _backup(wpsyncdir, site, connection, arguments['--quiet'], **options)
 
 
 def rollback():
@@ -248,7 +248,7 @@ def rollback():
 
     with connect(dest_site) as connection:
         _rollback(wpsyncdir, source_site, dest_site, connection, backup_id,
-                  arguments['--verbose'], **options)
+                  arguments['--quiet'], **options)
 
 
 def list_backups():
@@ -267,7 +267,7 @@ def install():
     assert_site_exists(config, arguments['<site>'])
     site = config[arguments['<site>']]
     with connect(site) as connection:
-        _install(site, connection, arguments['--verbose'])
+        _install(site, connection, arguments['--quiet'])
 
 
 if __name__ == '__main__':

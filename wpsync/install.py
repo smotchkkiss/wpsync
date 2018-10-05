@@ -135,13 +135,13 @@ function starts_with ($haystack, $needle) {{
 '''
 
 
-def install(site, connection, verbose):
-    if verbose:
+def install(site, connection, quiet):
+    if not quiet:
         print(f'Installing new WordPress for {site["name"]}')
     # TODO:
     # check if there's already a WordPress at the site, and if so,
     # ask the user if they want to replace it.
     php_code = wpinstall_php_template.format(**site)
     connection.run_php(php_code)
-    if verbose:
+    if not quiet:
         print('DONE')
