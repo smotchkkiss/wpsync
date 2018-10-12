@@ -42,7 +42,7 @@ def backup(wpsyncdir, site, connection, quiet,
     if not quiet:
         put.title(f'Creating new backup of {site["name"]}')
 
-    if database:
+    if database or full:
         if not quiet:
             put.step('Backing up database')
         database_backup_dir = backup_dir / 'database'
@@ -71,6 +71,14 @@ def backup(wpsyncdir, site, connection, quiet,
 
     if themes:
         backup_a_dir(backup_dir, site, connection, 'themes', quiet)
+
+    if full:
+        if not quiet:
+            put.step(f'Backing up full site')
+        local_dir = backup_dir / 'full'
+        remote_dir = site['base_dir'][:-1]
+        local_dir.mkdir(mode=0o755, parents=True, exist_ok=True)
+        connection.mirror(remote_dir, local_dir)
 
     return fs_ts
 
