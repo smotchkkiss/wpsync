@@ -145,6 +145,7 @@ import put
 # - don't just print DONE at the end of the program, especially if
 #   there were errors, and it also makes no sense with the list
 #   command _at all_ I think.
+# - compress backups
 
 
 def sync():
