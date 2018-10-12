@@ -86,4 +86,4 @@ def backup_a_dir(backup_dir, site, connection, name, quiet):
                      ' creating it')
         connection.mkdir(remote_dir)
     local_dir.mkdir(mode=0o755, parents=True, exist_ok=True)
-    connection.mirror(remote_dir, str(local_dir.resolve()))
+    connection.mirror(remote_dir, local_dir)
