@@ -142,6 +142,9 @@ import put
 #   then.)
 # - detect when a host uses http auth but it isn't configured
 #   (401 Unauthorized) and show a meaningful error message
+# - don't just print DONE at the end of the program, especially if
+#   there were errors, and it also makes no sense with the list
+#   command _at all_ I think.
 
 
 def sync():
