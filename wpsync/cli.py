@@ -146,6 +146,8 @@ import put
 #   there were errors, and it also makes no sense with the list
 #   command _at all_ I think.
 # - compress backups
+# - add a --only-files option to --full, or think of a better way,
+#   but make it possible to explicitly include/exclude the database
 
 
 def sync():
