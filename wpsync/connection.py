@@ -5,7 +5,7 @@ from contextlib import contextmanager
 from tempfile import NamedTemporaryFile
 from pathlib import Path
 from subprocess import run
-from sh import lftp, rsync, scp, ssh
+from sh import lftp, rsync, scp, ssh, ErrorReturnCode_1
 import requests
 
 
@@ -27,6 +27,10 @@ def s(path):
     if type(path) == str:
         return path
     return str(path.resolve())
+
+
+class RemoteExecutionError(Exception):
+    pass
 
 
 class Connection:
@@ -55,6 +59,8 @@ class Connection:
         else:
             auth = None
         r = requests.get(url, auth=auth)
+        if r.status_code != 200:
+            raise RemoteExecutionError(r.text)
         self.rm(path)
         return r.text
 
@@ -62,6 +68,9 @@ class Connection:
 class FileConnection(Connection):
     def dir_exists(self, path):
         return os.path.isdir(path)
+
+    def file_exists(self, path):
+        return os.path.isfile(path)
 
     def mkdir(self, path):
         try:
@@ -109,6 +118,13 @@ class SSHConnection(Connection):
 
     def dir_exists(self, path):
         res = self.ssh_do(f'test -d {quote(s(path))} && echo yes')
+        return 'yes' in res
+
+    def file_exists(self, path):
+        try:
+            res = self.ssh_do(f'test -f {quote(s(path))} && echo yes')
+        except ErrorReturnCode_1 as e:
+            return False
         return 'yes' in res
 
     def mkdir(self, path):
@@ -159,6 +175,11 @@ class FTPConnection(Connection):
     def dir_exists(self, path):
         path = path[:-1] + '[' + path[-1] + ']'
         res = self.ftp_do(f'glob --exist -d {quote(s(path))} && echo yes')
+        return 'yes' in res
+
+    def file_exists(self, path):
+        path = path[:-1] + '[' + path[-1] + ']'
+        res = self.ftp_do(f'glob --exist -f {quote(s(path))} && echo yes')
         return 'yes' in res
 
     def mkdir(self, path):

@@ -2,6 +2,7 @@ from datetime import datetime
 from pathlib import Path
 from host_info import HostInfo
 import put
+from connection import RemoteExecutionError
 
 
 this_dir = Path(__file__).resolve().parent
@@ -57,11 +58,16 @@ def backup(wpsyncdir, site, connection, quiet,
                        mysqldump_library_remote)
         # TODO Connection#run_php returns the response text, do
         # something with it?
-        connection.run_php(php_code)
-        connection.rm(mysqldump_library_remote)
-
-        connection.get(remote_dump_file, str(local_dump_file.resolve()))
-        connection.rm(remote_dump_file)
+        try:
+            connection.run_php(php_code)
+            connection.get(remote_dump_file, str(local_dump_file.resolve()))
+        except RemoteExecutionError as error:
+            put.error(error)
+        finally:
+            connection.rm(mysqldump_library_remote)
+            # TODO easier to ask forgiveness
+            if connection.file_exists(remote_dump_file):
+                connection.rm(remote_dump_file)
 
     if uploads:
         backup_a_dir(backup_dir, site, connection, 'uploads', quiet)
@@ -74,7 +80,7 @@ def backup(wpsyncdir, site, connection, quiet,
 
     if full:
         if not quiet:
-            put.step(f'Backing up full site')
+            put.step('Backing up full site')
         local_dir = backup_dir / 'full'
         remote_dir = site['base_dir'][:-1]
         local_dir.mkdir(mode=0o755, parents=True, exist_ok=True)
