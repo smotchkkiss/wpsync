@@ -58,8 +58,6 @@ import put
 
 # TODO:
 # - make the --full option work; auto-adapt wp-config.php
-# - on install, automatically create a .htaccess file, so the new
-#   WordPress is all set and ready to be synced into
 # - on connect, check if a WordPress actually exists at the site,
 #   and if not, maybe ask if the user wants to install one?
 # - don't crash if the wpsync dir already exists on connect, and

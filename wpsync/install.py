@@ -11,7 +11,10 @@ $wp_path = realpath(__DIR__ . '/..');
 // download WordPress
 $localpath = __DIR__ . '/latest.zip';
 $download = fopen('https://wordpress.org/latest.zip', 'r');
-file_put_contents($localpath, $download);
+$success = file_put_contents($localpath, $download);
+if ($success === FALSE) {{
+    exit_with_error();
+}}
 
 // unzip it
 $zip = new ZipArchive;
@@ -76,6 +79,27 @@ $wp_config = str_replace(
 
 // write to file
 $success = file_put_contents($wp_config_path, $wp_config);
+if ($success === FALSE) {{
+    exit_with_error();
+}}
+
+// create .htaccess
+$htaccess_path = $wp_path . '/.htaccess';
+$htaccess_content = <<<EOT
+
+# BEGIN WordPress
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /
+RewriteRule ^index\.php$ - [L]
+RewriteCond %{{REQUEST_FILENAME}} !-f
+RewriteCond %{{REQUEST_FILENAME}} !-d
+RewriteRule . /index.php [L]
+</IfModule>
+
+# END WordPress
+EOT;
+$success = file_put_contents($htaccess_path, $htaccess_content);
 if ($success === FALSE) {{
     exit_with_error();
 }}
