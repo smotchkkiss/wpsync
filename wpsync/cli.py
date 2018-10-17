@@ -151,6 +151,7 @@ import put
 # - or are the above 2 points a case of YAGNI and we can just go
 #   with some default and in the rare cases where we need more
 #   options we just do it by hand?
+# - handle exit via KeyboardInterrupt more gracefully
 
 
 def sync():
