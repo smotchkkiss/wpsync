@@ -81,7 +81,7 @@ import put
 # - maybe refactor here and there for more consistent variable
 #   names (backup_id vs ts_fs, source_site and dest_site vs source
 #   and dest)
-#   refactor for less [positional] arguments
+#   refactor for fewer [positional] arguments
 # - check that we're running on the right python version (that
 #   would be 3.6+ I guess?) at startup
 # - check that we check that the local peer dependencies are
