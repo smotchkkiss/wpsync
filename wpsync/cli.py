@@ -61,9 +61,6 @@ import put
 #   and if not, maybe ask if the user wants to install one?
 # - don't crash if the wpsync dir already exists on connect, and
 #   generally be generous with existing/non-existing directories
-# - maybe even add a 'default' section to config where a username
-#   and password can be specified that will be used for new
-#   installations?
 # - check: did I actually implement maintenance mode? maintenance
 #   mode should be on, at least during database restore - better
 #   during all backup and restore activities!
