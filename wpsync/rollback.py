@@ -65,7 +65,7 @@ def restore(wpsyncdir, source, dest, connection, fs_ts, quiet,
         what = source["name"] + '@' + fs_ts.replace('_', ':')
         if source != dest:
             what += ' to ' + dest["name"]
-        put.title(f'Rolling back {what}')
+        put.title(f'Restoring {what}')
 
     if database:
         restore_database(source, dest, connection, backup_dir, host, quiet)
@@ -86,12 +86,11 @@ def restore_database(source, dest, connection, backup_dir, host, quiet):
         put.error('Database is not contained in this backup')
         return
     if not quiet:
-        put.step('Rolling back database')
+        put.step('Restoring database')
 
     if dest != source:
         if not quiet:
-            put.info('Rollback source and target are different sites -'
-                     '\n  Altering database dump to match target settings')
+            put.info('Altering database dump to match target settings')
         try:
             db_settings = host.get_database_settings()
         except RuntimeError as e:
@@ -138,7 +137,7 @@ def restore_database(source, dest, connection, backup_dir, host, quiet):
 
 def restore_a_dir(backup_dir, dest, connection, name, quiet):
     if not quiet:
-        put.step(f'Rolling back {name}')
+        put.step(f'Restoring {name}')
     local_dir = backup_dir / name
     remote_dir = f'{dest["base_dir"]}wp-content/{name}'
     if not connection.dir_exists(remote_dir):
