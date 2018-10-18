@@ -91,9 +91,12 @@ class FileConnection(Connection):
         rsync('--recursive', '--del', '--compress',
               remote_path + '/', s(local_path))
 
-    def mirror_r(self, local_path, remote_path):
-        rsync('--recursive', '--del', '--compress',
-              s(local_path) + '/', remote_path)
+    def mirror_r(self, local_path, remote_path, exclude=[]):
+        args = ['--recursive', '--del', '--compress']
+        for pattern in exclude:
+            args.append(f'--exclude={quote(pattern)}')
+        args.extend([s(local_path) + '/', s(remote_path)])
+        rsync(*args)
 
     def cat(self, path):
         with open(path, 'r') as f:
@@ -144,10 +147,13 @@ class SSHConnection(Connection):
               f'{self.user}@{self.host}:{quote(s(remote_path))}/',
               s(local_path))
 
-    def mirror_r(self, local_path, remote_path):
-        rsync('--recursive', '--del', '--compress',
-              s(local_path) + '/',
-              f'{self.user}@{self.host}:{quote(s(remote_path))}')
+    def mirror_r(self, local_path, remote_path, exclude=[]):
+        args = ['--recursive', '--del', '--compress']
+        for pattern in exclude:
+            args.append(f'--exclude={quote(pattern)}')
+        args.append(s(local_path) + '/')
+        args.append(f'{self.user}@{self.host}:{quote(s(remote_path))}')
+        rsync(*args)
 
     def cat(self, path):
         return self.ssh_do(f'cat {quote(s(path))}')
@@ -198,9 +204,12 @@ class FTPConnection(Connection):
         cmd = 'mirror --parallel --delete'
         self.ftp_do(f'{cmd} {quote(s(remote_path))} {quote(s(local_path))}')
 
-    def mirror_r(self, local_path, remote_path):
+    def mirror_r(self, local_path, remote_path, exclude=[]):
         cmd = 'mirror --parallel --delete -R'
-        self.ftp_do(f'{cmd} {quote(s(local_path))} {quote(s(remote_path))}')
+        for pattern in exclude:
+            cmd += f' --exclude {quote(pattern)}'
+        cmd += f' {quote(s(local_path))} {quote(s(remote_path))}'
+        self.ftp_do(cmd)
 
     def cat(self, path):
         return self.ftp_do(f'cat {quote(s(path))}')

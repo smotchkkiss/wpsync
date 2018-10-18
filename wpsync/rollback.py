@@ -2,6 +2,7 @@ import sys
 from tempfile import NamedTemporaryFile
 from pathlib import Path
 from shlex import quote
+import re
 import sqlparse
 from host_info import HostInfo
 import put
@@ -67,7 +68,7 @@ def restore(wpsyncdir, source, dest, connection, fs_ts, quiet,
             what += ' to ' + dest["name"]
         put.title(f'Restoring {what}')
 
-    if database:
+    if database or full:
         restore_database(source, dest, connection, backup_dir, host, quiet)
 
     if uploads:
@@ -78,6 +79,27 @@ def restore(wpsyncdir, source, dest, connection, fs_ts, quiet,
 
     if themes:
         restore_a_dir(backup_dir, dest, connection, 'themes', quiet)
+
+    if full:
+        if not quiet:
+            put.step('Restoring full site')
+        local_dir = backup_dir / 'full'
+        remote_dir = dest['base_dir'][:-1]
+        exclude = []
+        if dest != source:
+            exclude.extend(['.htaccess', 'wp-config.php'])
+        connection.mirror_r(local_dir, remote_dir, exclude=exclude)
+        if dest != source:
+            put.step('Adapting wp-config.php for target and uploading it')
+            wp_config_file = local_dir / 'wp-config.php'
+            temp_wp_config_file = Path(NamedTemporaryFile().name)
+            adapt_wp_config_php(wp_config_file, temp_wp_config_file, dest)
+            remote_wp_config_file = remote_dir + '/wp-config.php'
+            connection.put(temp_wp_config_file, remote_wp_config_file)
+            put.step('Uploading default .htaccess')
+            local_htaccess_file = this_dir / 'htaccess-default.txt'
+            remote_htacces_file = remote_dir + '/.htaccess'
+            connection.put(local_htaccess_file, remote_htacces_file)
 
 
 def restore_database(source, dest, connection, backup_dir, host, quiet):
@@ -188,3 +210,28 @@ def replace_in_database_dump(in_file, out_file, to_set):
 
     modified_db_dump = ''.join(serialised)
     out_file.write_text(modified_db_dump, encoding='utf-8')
+
+
+def adapt_wp_config_php(in_file, out_file, site):
+    wp_config = in_file.read_text(encoding='utf-8')
+    wp_config = re.sub(
+        r'define\s*\(\s*(\'|")DB_NAME\1\s*,\s*(\'|").*?\2\s*\)',
+        f'define(\'DB_NAME\', \'{site["mysql_name"]}\')',
+        wp_config
+    )
+    wp_config = re.sub(
+        r'define\s*\(\s*(\'|")DB_USER\1\s*,\s*(\'|").*?\2\s*\)',
+        f'define(\'DB_USER\', \'{site["mysql_user"]}\')',
+        wp_config
+    )
+    wp_config = re.sub(
+        r'define\s*\(\s*(\'|")DB_PASSWORD\1\s*,\s*(\'|").*?\2\s*\)',
+        f'define(\'DB_PASSWORD\', \'{site["mysql_pass"]}\')',
+        wp_config
+    )
+    wp_config = re.sub(
+        r'define\s*\(\s*(\'|")DB_HOST\1\s*,\s*(\'|").*?\2\s*\)',
+        f'define(\'DB_HOST\', \'{site["mysql_host"]}\')',
+        wp_config
+    )
+    out_file.write_text(wp_config, encoding='utf-8')
