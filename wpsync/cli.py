@@ -50,7 +50,7 @@ from cli_helpers import (
 )
 from connection import connect
 from backup import backup as _backup
-from rollback import restore as _restore
+from restore import restore as _restore
 from list_backups import list_backups as _list_backups
 from install import install as _install
 import put
@@ -153,7 +153,6 @@ import put
 # - handle exit via KeyboardInterrupt more gracefully
 # - make it possible to restore -dupt selectively from a --full
 #   backup
-# - rename rollback.py to restore.py
 # - zip directories on remote hosts before downloading them, also
 #   upload zips and restore them there
 
@@ -199,7 +198,7 @@ def restore():
 
     # if the --backup argument is given, the user wanted the
     # backup with this particular id (and, optionally, from that
-    # particular source) to be rolled back.
+    # particular source) to be restored.
     if arguments['--backup']:
         match = re.match(r'(.+@)?(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})',
                          arguments['--backup'])
@@ -219,8 +218,8 @@ def restore():
 
     # if the dest_site wasn't given through the --site argument,
     # we'll determine it from the backup id - that means the backup
-    # will be implicitly rolled back to the site it originally
-    # belongs to.
+    # will be implicitly restored to the site it originally belongs
+    # to.
     if not dest_site:
         dest_site_name = match[1][:-1]
         assert_site_exists(config, dest_site_name)
@@ -251,7 +250,7 @@ def restore():
         backup_id = backup_id.replace(':', '_')
 
     # if no options are set, detect and use the options from the
-    # backup we're going to roll back.
+    # backup we're going to restore.
     if not any(options.values()):
         backup_dir = (wpsyncdir / 'backups' / source_site['fs_safe_name'] /
                       backup_id)
