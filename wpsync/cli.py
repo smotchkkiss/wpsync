@@ -152,6 +152,11 @@ import put
 #   with some default and in the rare cases where we need more
 #   options we just do it by hand?
 # - handle exit via KeyboardInterrupt more gracefully
+# - make it possible to restore -dupt selectively from a --full
+#   backup
+# - rename rollback.py to restore.py
+# - zip directories on remote hosts before downloading them, also
+#   upload zips and restore them there
 
 
 def sync():
