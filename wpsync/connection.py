@@ -42,7 +42,9 @@ class Connection:
         return f'{self.wpsync_dir}/{s(path)}'
 
     def make_wpsync_dir(self):
-        self.mkdir(self.wpsync_dir)
+        # TODO better to ask forgiveness
+        if not self.dir_exists(self.wpsync_dir):
+            self.mkdir(self.wpsync_dir)
 
     def remove_wpsync_dir(self):
         self.rmdir(self.wpsync_dir)

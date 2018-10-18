@@ -59,8 +59,7 @@ import put
 # TODO:
 # - on connect, check if a WordPress actually exists at the site,
 #   and if not, maybe ask if the user wants to install one?
-# - don't crash if the wpsync dir already exists on connect, and
-#   generally be generous with existing/non-existing directories
+# - generally be generous with existing/non-existing directories
 # - check: did I actually implement maintenance mode? maintenance
 #   mode should be on, at least during database restore - better
 #   during all backup and restore activities!
