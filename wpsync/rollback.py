@@ -56,8 +56,8 @@ if (!$report || !empty($report->errors['results'])) {{
 '''
 
 
-def rollback(wpsyncdir, source, dest, connection, fs_ts, quiet,
-             database, uploads, plugins, themes, full):
+def restore(wpsyncdir, source, dest, connection, fs_ts, quiet,
+            database, uploads, plugins, themes, full):
     host = HostInfo(wpsyncdir, dest, connection)
     backup_dir = wpsyncdir / 'backups' / source['fs_safe_name'] / fs_ts
 
@@ -68,19 +68,19 @@ def rollback(wpsyncdir, source, dest, connection, fs_ts, quiet,
         put.title(f'Rolling back {what}')
 
     if database:
-        rollback_database(source, dest, connection, backup_dir, host, quiet)
+        restore_database(source, dest, connection, backup_dir, host, quiet)
 
     if uploads:
-        rollback_a_dir(backup_dir, dest, connection, 'uploads', quiet)
+        restore_a_dir(backup_dir, dest, connection, 'uploads', quiet)
 
     if plugins:
-        rollback_a_dir(backup_dir, dest, connection, 'plugins', quiet)
+        restore_a_dir(backup_dir, dest, connection, 'plugins', quiet)
 
     if themes:
-        rollback_a_dir(backup_dir, dest, connection, 'themes', quiet)
+        restore_a_dir(backup_dir, dest, connection, 'themes', quiet)
 
 
-def rollback_database(source, dest, connection, backup_dir, host, quiet):
+def restore_database(source, dest, connection, backup_dir, host, quiet):
     dump_file = backup_dir / 'database' / 'dump.sql'
     if not dump_file.is_file():
         put.error('Database is not contained in this backup')
@@ -136,7 +136,7 @@ def rollback_database(source, dest, connection, backup_dir, host, quiet):
         connection.rm(mysqlreplace_library_remote)
 
 
-def rollback_a_dir(backup_dir, dest, connection, name, quiet):
+def restore_a_dir(backup_dir, dest, connection, name, quiet):
     if not quiet:
         put.step(f'Rolling back {name}')
     local_dir = backup_dir / name

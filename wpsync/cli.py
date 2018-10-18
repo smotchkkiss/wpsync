@@ -5,7 +5,7 @@ Synchronise WordPress sites across ssh, (s)ftp and local hosts
 Usage:
   wpsync [-q] [-c file] [-l] (sync|s) ((-d|-u|-p|-t)... | -a | -f) <source> <dest>
   wpsync [-q] [-c file] [-l] (backup|b) ((-d|-u|-p|-t)... | -a | -f) <source>
-  wpsync [-q] [-c file] [-l] (rollback|r) [(-d|-u|-p|-t)... | -a | -f] [-b backup] [-s site]
+  wpsync [-q] [-c file] [-l] (restore|r) [(-d|-u|-p|-t)... | -a | -f] [-b backup] [-s site]
   wpsync [-q] [-c file] [-l] (list|l) [(-d|-u|-p|-t)... | -a | -f] [-s site]
   wpsync [-q] [-c file] [-l] (install|i) <site>
   wpsync -h | --help
@@ -24,12 +24,12 @@ Options:
   -l --legacy                Use old name field instead of config section headers.
   -b backup --backup=backup  ID of a specific backup to use.
   -s site --site=site        Specify a site where it's optional.
-  -d --database              Sync/Backup/Rollback database.
-  -u --uploads               Sync/Backup/Rollback uploads.
-  -p --plugins               Sync/Backup/Rollback plugins.
-  -t --themes                Sync/Backup/Rollback the theme(s).
-  -a --all                   Sync/Backup/Rollback all of the above.
-  -f --full                  Sync/Backup/Rollback the full site.
+  -d --database              Sync/Backup/Restore database.
+  -u --uploads               Sync/Backup/Restore uploads.
+  -p --plugins               Sync/Backup/Restore plugins.
+  -t --themes                Sync/Backup/Restore the themes.
+  -a --all                   Sync/Backup/Restore all of the above.
+  -f --full                  Sync/Backup/Restore the full site.
 """
 # The (-d|-u|-p|-t)... thing is a hack to make docopt accept any,
 # but at least one of -d, -u, -p, -t.
@@ -50,7 +50,7 @@ from cli_helpers import (
 )
 from connection import connect
 from backup import backup as _backup
-from rollback import rollback as _rollback
+from rollback import restore as _restore
 from list_backups import list_backups as _list_backups
 from install import install as _install
 import put
@@ -66,8 +66,8 @@ import put
 #   and password can be specified that will be used for new
 #   installations?
 # - check: did I actually implement maintenance mode? maintenance
-#   mode should be on, at least during database rollbacks - better
-#   during all backup and rollback activities!
+#   mode should be on, at least during database restore - better
+#   during all backup and restore activities!
 # - drop support for the 'theme' config key, it was a bad idea
 # - support databases with multiple installations or other stuff
 #   than wordpress in them, add an optional 'mysql_prefix'
@@ -80,7 +80,7 @@ import put
 # - support a new 'alias' configuration option for shorter,
 #   alternative site names for easier command line use
 # - would it somehow be possible to make [site] an optional
-#   argument to rollback (and not an option?)
+#   argument to restore (and not an option?)
 # - publish to PyPI and/or, preferably, homebrew!
 # - maybe refactor here and there for more consistent variable
 #   names (backup_id vs ts_fs, source_site and dest_site vs source
@@ -124,7 +124,7 @@ import put
 #   something ... and in case of the connection loss, maybe still
 #   write the name of the wpsync dir to a list of stale wpsync dirs
 #   in the host info file so we know we can remove it next time?
-# - maybe change the rollback cli to [backup] [site] and, if both
+# - maybe change the restore cli to [backup] [site] and, if both
 #   are given, try to detect if [backup] is a backup_id or a site,
 #   and so on ... ?
 # - add waiting spinners on steps?
@@ -165,8 +165,8 @@ def sync():
     with connect(dest) as connection:
         _backup(wpsyncdir, dest, connection,
                 arguments['--quiet'], **options)
-        _rollback(wpsyncdir, source, dest, connection, backup_id,
-                  arguments['--quiet'], **options)
+        _restore(wpsyncdir, source, dest, connection, backup_id,
+                 arguments['--quiet'], **options)
 
 
 def backup():
@@ -176,7 +176,7 @@ def backup():
         _backup(wpsyncdir, site, connection, arguments['--quiet'], **options)
 
 
-def rollback():
+def restore():
     source_site = None
     dest_site = None
     match = None
@@ -207,7 +207,7 @@ def rollback():
 
     # if neither of --site and --backup are given, or --site is not
     # given and the backup doesn't have the [site@] part, we can't
-    # determine which site to rollback to!
+    # determine which site to restore to!
     if not dest_site and (not match or not match[1]):
         put.error('You must, at least, either provide a fully qualified'
                   ' backup id, or a site name')
@@ -258,8 +258,8 @@ def rollback():
         options['full'] = (backup_dir / 'full').is_dir()
 
     with connect(dest_site) as connection:
-        _rollback(wpsyncdir, source_site, dest_site, connection, backup_id,
-                  arguments['--quiet'], **options)
+        _restore(wpsyncdir, source_site, dest_site, connection, backup_id,
+                 arguments['--quiet'], **options)
 
 
 def list_backups():
@@ -304,8 +304,8 @@ if __name__ == '__main__':
         sync()
     elif arguments['backup'] or arguments['b']:
         backup()
-    elif arguments['rollback'] or arguments['r']:
-        rollback()
+    elif arguments['restore'] or arguments['r']:
+        restore()
     elif arguments['list'] or arguments['l']:
         list_backups()
     elif arguments['install'] or arguments['i']:
