@@ -122,7 +122,10 @@ class SSHConnection(Connection):
         return ssh(f'{self.user}@{self.host}', command)
 
     def dir_exists(self, path):
-        res = self.ssh_do(f'test -d {quote(s(path))} && echo yes')
+        try:
+            res = self.ssh_do(f'test -d {quote(s(path))} && echo yes')
+        except ErrorReturnCode_1 as e:
+            return False
         return 'yes' in res
 
     def file_exists(self, path):
@@ -190,7 +193,10 @@ class FTPConnection(Connection):
 
     def file_exists(self, path):
         path = path[:-1] + '[' + path[-1] + ']'
-        res = self.ftp_do(f'glob --exist -f {quote(s(path))} && echo yes')
+        try:
+            res = self.ftp_do(f'glob --exist -f {quote(s(path))} && echo yes')
+        except ErrorReturnCode_1 as e:
+            return False
         return 'yes' in res
 
     def mkdir(self, path):
