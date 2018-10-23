@@ -56,9 +56,6 @@ from install import install as _install
 import put
 
 
-# FIXME:
-# - exception is thrown if wpsync dir already exists on remote host
-#   (ftp)
 # TODO:
 # - on connect, check if a WordPress actually exists at the site,
 #   and if not, maybe ask if the user wants to install one?

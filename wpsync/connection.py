@@ -182,7 +182,10 @@ class FTPConnection(Connection):
 
     def dir_exists(self, path):
         path = path[:-1] + '[' + path[-1] + ']'
-        res = self.ftp_do(f'glob --exist -d {quote(s(path))} && echo yes')
+        try:
+            res = self.ftp_do(f'glob --exist -d {quote(s(path))} && echo yes')
+        except ErrorReturnCode_1 as e:
+            return False
         return 'yes' in res
 
     def file_exists(self, path):
