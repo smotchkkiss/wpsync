@@ -20,6 +20,7 @@ try {{
         '{mysql_user}',
         '{mysql_pass}',
         '{mysql_name}',
+        {mysql_port},
         __DIR__ . '/dump.sql'
     );
 
@@ -43,6 +44,7 @@ $report = new icit_srdb(array(
     'name' => '{mysql_name}',
     'user' => '{mysql_user}',
     'pass' => '{mysql_pass}',
+    'port' => {mysql_port},
     'search' => '{search}',
     'replace' => '{replace}',
 ));

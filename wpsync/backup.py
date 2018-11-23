@@ -13,7 +13,7 @@ include_once(__DIR__ . '/Mysqldump.php');
 try {{
 
     $dump = new Ifsnop\Mysqldump\Mysqldump(
-        'mysql:host={mysql_host};dbname={mysql_name}',
+        'mysql:host={mysql_host};dbname={mysql_name};port={mysql_port}',
         '{mysql_user}',
         '{mysql_pass}',
         array(

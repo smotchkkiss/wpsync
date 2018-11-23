@@ -74,6 +74,7 @@ def validate_config(config):
         'mysql_host': str,
         'mysql_user': str,
         'mysql_pass': str,
+        Optional('mysql_port'): str,
     }, {
         # localhost with http basic auth
         # (why would that be needed?!)
@@ -86,6 +87,7 @@ def validate_config(config):
         'mysql_host': str,
         'mysql_user': str,
         'mysql_pass': str,
+        Optional('mysql_port'): str,
         'http_user': str,
         'http_pass': str,
     }, {
@@ -102,6 +104,7 @@ def validate_config(config):
         'mysql_host': str,
         'mysql_user': str,
         'mysql_pass': str,
+        Optional('mysql_port'): str,
     }, {
         # FTP hosts with http basic auth
         'protocol': 'ftp',
@@ -116,6 +119,7 @@ def validate_config(config):
         'mysql_host': str,
         'mysql_user': str,
         'mysql_pass': str,
+        Optional('mysql_port'): str,
         'http_user': str,
         'http_pass': str,
     }, {
@@ -132,6 +136,7 @@ def validate_config(config):
         'mysql_host': str,
         'mysql_user': str,
         'mysql_pass': str,
+        Optional('mysql_port'): str,
     }, {
         # SSH hosts with http basic auth
         'protocol': Or('ssh', 'sftp'),
@@ -146,6 +151,7 @@ def validate_config(config):
         'mysql_host': str,
         'mysql_user': str,
         'mysql_pass': str,
+        Optional('mysql_port'): str,
         'http_user': str,
         'http_pass': str,
     })})
@@ -177,6 +183,8 @@ def normalize_config(config):
             site['protocol'] = 'ftp'
             site['pass'] = ''
             site['host'] = 'sftp://' + site['host']
+        if 'mysql_port' not in site:
+            site['mysql_port'] = '3306'
     return config
 
 
