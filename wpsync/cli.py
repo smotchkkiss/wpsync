@@ -63,7 +63,6 @@ import put
 # - check: did I actually implement maintenance mode? maintenance
 #   mode should be on, at least during database restore - better
 #   during all backup and restore activities!
-# - drop support for the 'theme' config key, it was a bad idea
 # - support databases with multiple installations or other stuff
 #   than wordpress in them, add an optional 'mysql_prefix'
 #   configuration option for that
