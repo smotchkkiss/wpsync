@@ -147,8 +147,6 @@ import put
 # - handle exit via KeyboardInterrupt more gracefully
 # - make it possible to restore -dupt selectively from a --full
 #   backup
-# - zip directories on remote hosts before downloading them, also
-#   upload zips and restore them there
 
 
 def sync():
