@@ -88,9 +88,6 @@ import put
 #   installed (lftp and so on!) - or even better, maybe we can
 #   define those as dependencies in the homebrew formula? (but
 #   anyway, still check for them programmatically, please!)
-# - if things get too complex, maybe drop support for native
-#   mysql/mysqldump and focus on the PHP version, which should
-#   work everywhere!
 # - maybe update the PHP dependencies
 # - add support for (project-)local configuration files and local
 #   'wpsyncdir's in the respective location(s) - or find a way to
