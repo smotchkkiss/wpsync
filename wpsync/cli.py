@@ -38,6 +38,10 @@ Options:
 # think it's still better than spelling out the options like
 # (-d [-upt] | -u [-dpt] | -p [-dut] | -t [-dup])
 import sys
+if sys.version_info < (3, 6):
+    print('wpsync requires python 3.6 or higher.')
+    sys.exit()
+
 import re
 from docopt import docopt
 from cli_helpers import (
@@ -80,8 +84,6 @@ import put
 #   names (backup_id vs ts_fs, source_site and dest_site vs source
 #   and dest)
 #   refactor for fewer [positional] arguments
-# - check that we're running on the right python version (that
-#   would be 3.6+ I guess?) at startup
 # - check that we check that the local peer dependencies are
 #   installed (lftp and so on!) - or even better, maybe we can
 #   define those as dependencies in the homebrew formula? (but
