@@ -6,6 +6,7 @@ import re
 import sqlparse
 from host_info import HostInfo
 import put
+from connection import RemoteExecutionError
 
 
 this_dir = Path(__file__).resolve().parent
@@ -53,8 +54,15 @@ $output = ob_get_clean();
 if (!$report || !empty($report->errors['results'])) {{
 
     http_response_code(500);
-    print_r($report->errors);
-    echo $output;
+    if (!$report) {{
+        echo "The search-replace-database-tool didn't return a report.\n";
+    }}
+
+    if (!empty($report->errors['results'])) {{
+        foreach ($report->errors['results'] as $error) {{
+            echo "$error\n";
+        }}
+    }}
 }}
 '''
 
@@ -155,8 +163,12 @@ def restore_database(source, dest, connection, backup_dir, host, quiet):
         mysqlreplace_library_local = this_dir / 'srdb.class.php'
         mysqlreplace_library_remote = connection.normalise('srdb.class.php')
         connection.put(mysqlreplace_library_local, mysqlreplace_library_remote)
-        connection.run_php(php_code)
-        connection.rm(mysqlreplace_library_remote)
+        try:
+            connection.run_php(php_code)
+        except RemoteExecutionError as error:
+            put.error(error)
+        finally:
+            connection.rm(mysqlreplace_library_remote)
 
 
 def restore_a_dir(backup_dir, dest, connection, name, quiet):
