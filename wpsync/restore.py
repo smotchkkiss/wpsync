@@ -127,7 +127,7 @@ def restore_database(source, dest, connection, backup_dir, host, quiet):
             db_settings = host.get_database_settings()
         except RuntimeError as e:
             put.error(f'Error: {e}' +
-                      '\n  Create a backup for {dest["name"]} first!')
+                      f'\n  Create a backup for {dest["name"]} first!')
             sys.exit(1)
         temp_dump_file = Path(NamedTemporaryFile().name)
         replace_in_database_dump(dump_file, temp_dump_file, db_settings)
