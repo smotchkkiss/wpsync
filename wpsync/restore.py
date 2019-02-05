@@ -144,10 +144,14 @@ def restore_database(source, dest, connection, backup_dir, host, quiet):
         'import-sql-database-mysql.php'
     )
     connection.put(mysqlimport_library_local, mysqlimport_library_remote)
-    connection.run_php(php_code)
-    connection.rm(mysqlimport_library_remote)
-
-    connection.rm(remote_dump_file)
+    try:
+        connection.run_php(php_code)
+    except RemoteExecutionError as error:
+        put.error(f'Error importing the SQL dump: {error}')
+        return
+    finally:
+        connection.rm(mysqlimport_library_remote)
+        connection.rm(remote_dump_file)
 
     if 'temp_dump_file' in locals():
         temp_dump_file.unlink()
