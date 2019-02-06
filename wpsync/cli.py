@@ -147,6 +147,13 @@ import put
 # - handle exit via KeyboardInterrupt more gracefully
 # - make it possible to restore -dupt selectively from a --full
 #   backup
+# - if ssh isn't configured to work without entering a passphrase
+#   interactively, wpsync is not usable _at all_. because the
+#   password prompt is simply suppressed until wpsync crashes
+#   because ssh crashes with too many failed authentication
+#   attempts. this is really bad and should be changed! FIXME check
+#   if it is possible to fix this with sh, otherwise probably ssh
+#   will have to be run through subprocess.run instead!
 
 
 def sync():
