@@ -18,12 +18,13 @@ def check_required_executable(executable_name):
 
 
 config_file_names = [
-    'wpsync.config.ini',
     'wpsync.ini',
+    'wpsync.config.ini',
     '.wpsyncrc',
-    '.wpsync/wpsync.config.ini',
-    '.wpsync/config.ini',
+    '.wpsync.ini',
+    '.wpsync.config.ini',
     '.wpsync/wpsync.ini',
+    '.wpsync/wpsync.config.ini',
 ]
 
 
