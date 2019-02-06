@@ -212,11 +212,11 @@ class FTPConnection(Connection):
         self.ftp_do(f'put {quote(s(local_path))} -o {quote(s(remote_path))}')
 
     def mirror(self, remote_path, local_path):
-        cmd = 'mirror --parallel --delete'
+        cmd = 'mirror --delete'
         self.ftp_do(f'{cmd} {quote(s(remote_path))} {quote(s(local_path))}')
 
     def mirror_r(self, local_path, remote_path, exclude=[]):
-        cmd = 'mirror --parallel --delete -R'
+        cmd = 'mirror --delete -R'
         for pattern in exclude:
             cmd += f' --exclude {quote(pattern)}'
         cmd += f' {quote(s(local_path))} {quote(s(remote_path))}'
