@@ -1,10 +1,17 @@
+import sys
 import put
+from connection import RemoteExecutionError
 
 
 # curly braces in php template are doubled to escape them
 # (otherwise python will interpret them as replacement field
 # delimiters)
 wpinstall_php_template = '''<?php
+
+// show all errors we can get
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 $wp_path = realpath(__DIR__ . '/..');
 
@@ -13,7 +20,7 @@ $localpath = __DIR__ . '/latest.zip';
 $download = fopen('https://wordpress.org/latest.zip', 'r');
 $success = file_put_contents($localpath, $download);
 if ($success === FALSE) {{
-    exit_with_error();
+    exit_with_error("Failed to write local file at {{$localpath}}");
 }}
 
 // unzip it
@@ -23,7 +30,7 @@ if ($is_zip_open === TRUE) {{
     $zip->extractTo($wp_path);
     $zip->close();
 }} else {{
-    exit_with_error();
+    exit_with_error("Failed to open zip file at {{$localpath}}");
 }}
 
 // move to root
@@ -34,7 +41,9 @@ $wp_config_sample_path = $wp_path . '/wp-config-sample.php';
 $wp_config_path = $wp_path . '/wp-config.php';
 $wp_config = file_get_contents($wp_config_sample_path);
 if ($wp_config === FALSE) {{
-    exit_with_error();
+    exit_with_error(
+        "Failed to read wp-config file at {{$wp_config_sample_path}}"
+    );
 }}
 
 // database configuration
@@ -46,7 +55,7 @@ $wp_config = str_replace('localhost', '{mysql_host}', $wp_config);
 // generate salts
 $salt = file_get_contents('https://api.wordpress.org/secret-key/1.1/salt/');
 if ($salt === FALSE) {{
-    exit_with_error();
+    exit_with_error("Failed to generate salts via api.wordpress.org");
 }}
 $wp_config_lines = explode("\\n", $wp_config);
 $salt_start_line_regexp = '/^\s*define\(\s*(\\'|")AUTH_KEY\g1\s*,/';
@@ -80,7 +89,7 @@ $wp_config = str_replace(
 // write to file
 $success = file_put_contents($wp_config_path, $wp_config);
 if ($success === FALSE) {{
-    exit_with_error();
+    exit_with_error("Failed to write wp-config file at {{$wp_config_path}}");
 }}
 
 // create .htaccess
@@ -101,17 +110,18 @@ RewriteRule . /index.php [L]
 EOT;
 $success = file_put_contents($htaccess_path, $htaccess_content);
 if ($success === FALSE) {{
-    exit_with_error();
+    exit_with_error("Failed to write .htaccess file at {{$htaccess_path}}");
 }}
 
 // remove latest.zip
 unlink($localpath);
 
 // DONE -- utilities:
-function exit_with_error () {{
+function exit_with_error($message) {{
     $protocol = $_SERVER['SERVER_PROTOCOL'];
-    $error_message = $protocol . ' 500 Internal Server Error';
-    header($error_message, true, 500);
+    $header = $protocol . ' 500 Internal Server Error';
+    header($header, true, 500);
+    echo $message;
     exit();
 }}
 
@@ -163,4 +173,8 @@ def install(site, connection, quiet):
     # check if there's already a WordPress at the site, and if so,
     # ask the user if they want to replace it.
     php_code = wpinstall_php_template.format(**site)
-    connection.run_php(php_code)
+    try:
+        connection.run_php(php_code)
+    except RemoteExecutionError as e:
+        put.error(f'Error during remote execution:\n  {e}')
+        sys.exit(1)
