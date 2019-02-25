@@ -49,10 +49,10 @@ if ($salt === FALSE) {{
     exit_with_error();
 }}
 $wp_config_lines = explode("\n", $wp_config);
-$salt_start_line = "define('AUTH_KEY',";
+$salt_start_line_regexp = '/^\s*define\(\s*(\\'|")AUTH_KEY\g1\s*,/';
 $salt_start_line_number = 0;
 foreach ($wp_config_lines as $index => $line) {{
-    if (starts_with($line, $salt_start_line)) {{
+    if (preg_match($salt_start_line_regexp, $line)) {{
         $salt_start_line_number = $index;
         break;
     }}
@@ -152,12 +152,6 @@ function rmove($src, $dest) {{
         }}
     }}
     rmdir($src);
-}}
-
-// https://stackoverflow.com/a/834355
-function starts_with ($haystack, $needle) {{
-    $length = strlen($needle);
-    return (substr($haystack, 0, $length) === $needle);
 }}
 '''
 
