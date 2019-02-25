@@ -48,7 +48,7 @@ $salt = file_get_contents('https://api.wordpress.org/secret-key/1.1/salt/');
 if ($salt === FALSE) {{
     exit_with_error();
 }}
-$wp_config_lines = explode("\n", $wp_config);
+$wp_config_lines = explode("\\n", $wp_config);
 $salt_start_line_regexp = '/^\s*define\(\s*(\\'|")AUTH_KEY\g1\s*,/';
 $salt_start_line_number = 0;
 foreach ($wp_config_lines as $index => $line) {{
@@ -57,7 +57,7 @@ foreach ($wp_config_lines as $index => $line) {{
         break;
     }}
 }}
-$salt_lines = explode("\n", $salt);
+$salt_lines = explode("\\n", $salt);
 $salt_length = sizeof($salt_lines);
 array_splice(
     $wp_config_lines,
@@ -65,10 +65,10 @@ array_splice(
     $salt_length,
     $salt_lines
 );
-$wp_config = implode("\n", $wp_config_lines);
+$wp_config = implode("\\n", $wp_config_lines);
 
 // replace all newlines with a default unix \n
-$wp_config = preg_replace('~\R~u', "\n", $wp_config);
+$wp_config = preg_replace('~\R~u', "\\n", $wp_config);
 
 // set debug to true
 $wp_config = str_replace(
