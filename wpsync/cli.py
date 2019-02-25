@@ -75,8 +75,6 @@ import put
 # - maybe add an option to persistently install the client? (no!)
 # - make the client safer by using http simple auth with
 #   automatically, per-connection generated passwords
-# - support a new 'alias' configuration option for shorter,
-#   alternative site names for easier command line use
 # - would it somehow be possible to make [site] an optional
 #   argument to restore (and not an option?)
 # - publish to PyPI and/or, preferably, homebrew!
