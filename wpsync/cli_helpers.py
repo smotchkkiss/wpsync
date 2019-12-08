@@ -168,9 +168,10 @@ def normalize_config(config):
         # also TODO make the following line shorter
         if site['protocol'] == 'ftp' and site['base_dir'] and site['base_dir'][0] == '/':
             print(
-                f'WARNING:' +
-                ' base_dir for {site_name} is configured as {};'
-                ' Did you mean to supply an absolute path?'
+                "WARNING:"
+                + f" base_dir for {site_name} is configured as "
+                + str(site["base_dir"])
+                + " Did you mean to supply an absolute path?"
             )
         if site['base_dir'] and site['base_dir'][-1] != '/':
             site['base_dir'] += '/'
