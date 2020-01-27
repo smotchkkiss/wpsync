@@ -155,7 +155,7 @@ from . import put
 #   will have to be run through subprocess.run instead!
 
 
-def sync():
+def sync(arguments, config, config_path, wpsyncdir, options):
     assert_site_exists(config, arguments["<source>"])
     assert_site_exists(config, arguments["<dest>"])
     source = config[arguments["<source>"]]
@@ -177,14 +177,14 @@ def sync():
         )
 
 
-def backup():
+def backup(arguments, config, config_path, wpsyncdir, options):
     assert_site_exists(config, arguments["<source>"])
     site = config[arguments["<source>"]]
     with connect(site) as connection:
         _backup(wpsyncdir, site, connection, arguments["--quiet"], **options)
 
 
-def restore():
+def restore(arguments, config, config_path, wpsyncdir, options):
     source_site = None
     dest_site = None
     match = None
@@ -284,7 +284,7 @@ def restore():
         )
 
 
-def list_backups():
+def list_backups(arguments, config, config_path, wpsyncdir, options):
     if arguments["--site"] is not None:
         assert_site_exists(config, arguments["--site"])
         site_name = arguments["--site"]
@@ -296,7 +296,7 @@ def list_backups():
     _list_backups(wpsyncdir, site_names, **options)
 
 
-def install():
+def install(arguments, config, config_path, wpsyncdir, options):
     assert_site_exists(config, arguments["<site>"])
     site = config[arguments["<site>"]]
     with connect(site) as connection:
@@ -322,16 +322,24 @@ def main():
         config[site]["name"] = site
         config[site]["fs_safe_name"] = encode_site_name(site)
 
+    standard_args = {
+        "arguments": arguments,
+        "config": config,
+        "config_path": config_path,
+        "wpsyncdir": wpsyncdir,
+        "options": options,
+    }
+
     if arguments["sync"] or arguments["s"]:
-        sync()
+        sync(**standard_args)
     elif arguments["backup"] or arguments["b"]:
-        backup()
+        backup(**standard_args)
     elif arguments["restore"] or arguments["r"]:
-        restore()
+        restore(**standard_args)
     elif arguments["list"] or arguments["l"]:
-        list_backups()
+        list_backups(**standard_args)
     elif arguments["install"] or arguments["i"]:
-        install()
+        install(**standard_args)
 
     if not arguments["--quiet"]:
         put.success("DONE")
