@@ -6,7 +6,7 @@ from .connection import RemoteExecutionError
 # curly braces in php template are doubled to escape them
 # (otherwise python will interpret them as replacement field
 # delimiters)
-wpinstall_php_template = '''<?php
+wpinstall_php_template = """<?php
 
 // show all errors we can get
 ini_set('display_errors', 1);
@@ -163,7 +163,7 @@ function rmove($src, $dest) {{
     }}
     rmdir($src);
 }}
-'''
+"""
 
 
 def install(site, connection, quiet):
@@ -176,5 +176,5 @@ def install(site, connection, quiet):
     try:
         connection.run_php(php_code)
     except RemoteExecutionError as e:
-        put.error(f'Error during remote execution:\n  {e}')
+        put.error(f"Error during remote execution:\n  {e}")
         sys.exit(1)

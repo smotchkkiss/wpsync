@@ -38,8 +38,9 @@ Options:
 # think it's still better than spelling out the options like
 # (-d [-upt] | -u [-dpt] | -p [-dut] | -t [-dup])
 import sys
+
 if sys.version_info < (3, 6):
-    print('wpsync requires python 3.6 or higher.')
+    print("wpsync requires python 3.6 or higher.")
     sys.exit()
 
 import re
@@ -155,25 +156,32 @@ from . import put
 
 
 def sync():
-    assert_site_exists(config, arguments['<source>'])
-    assert_site_exists(config, arguments['<dest>'])
-    source = config[arguments['<source>']]
-    dest = config[arguments['<dest>']]
+    assert_site_exists(config, arguments["<source>"])
+    assert_site_exists(config, arguments["<dest>"])
+    source = config[arguments["<source>"]]
+    dest = config[arguments["<dest>"]]
     with connect(source) as connection:
-        backup_id = _backup(wpsyncdir, source, connection,
-                            arguments['--quiet'], **options)
+        backup_id = _backup(
+            wpsyncdir, source, connection, arguments["--quiet"], **options
+        )
     with connect(dest) as connection:
-        _backup(wpsyncdir, dest, connection,
-                arguments['--quiet'], **options)
-        _restore(wpsyncdir, source, dest, connection, backup_id,
-                 arguments['--quiet'], **options)
+        _backup(wpsyncdir, dest, connection, arguments["--quiet"], **options)
+        _restore(
+            wpsyncdir,
+            source,
+            dest,
+            connection,
+            backup_id,
+            arguments["--quiet"],
+            **options,
+        )
 
 
 def backup():
-    assert_site_exists(config, arguments['<source>'])
-    site = config[arguments['<source>']]
+    assert_site_exists(config, arguments["<source>"])
+    site = config[arguments["<source>"]]
     with connect(site) as connection:
-        _backup(wpsyncdir, site, connection, arguments['--quiet'], **options)
+        _backup(wpsyncdir, site, connection, arguments["--quiet"], **options)
 
 
 def restore():
@@ -189,19 +197,23 @@ def restore():
 
     # if the --site argument is given, the user wanted it to be
     # the backup destination.
-    if arguments['--site']:
-        assert_site_exists(config, arguments['--site'])
-        dest_site = config[arguments['--site']]
+    if arguments["--site"]:
+        assert_site_exists(config, arguments["--site"])
+        dest_site = config[arguments["--site"]]
 
     # if the --backup argument is given, the user wanted the
     # backup with this particular id (and, optionally, from that
     # particular source) to be restored.
-    if arguments['--backup']:
-        match = re.match(r'(.+@)?(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})',
-                         arguments['--backup'])
+    if arguments["--backup"]:
+        match = re.match(
+            r"(.+@)?(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})",
+            arguments["--backup"],
+        )
         if not match:
-            put.error('Wrong backup id format.'
-                      ' It should look like [site@]yyyy-mm-ddThh:mm:ss')
+            put.error(
+                "Wrong backup id format."
+                " It should look like [site@]yyyy-mm-ddThh:mm:ss"
+            )
             sys.exit(1)
         backup_id = match[2]
 
@@ -209,8 +221,10 @@ def restore():
     # given and the backup doesn't have the [site@] part, we can't
     # determine which site to restore to!
     if not dest_site and (not match or not match[1]):
-        put.error('You must, at least, either provide a fully qualified'
-                  ' backup id, or a site name')
+        put.error(
+            "You must, at least, either provide a fully qualified"
+            " backup id, or a site name"
+        )
         sys.exit(1)
 
     # if the dest_site wasn't given through the --site argument,
@@ -235,7 +249,7 @@ def restore():
     # finally, if no backup_id is given, we'll try to use the last
     # backup that was taken from the source site.
     if not backup_id:
-        backup_dir = wpsyncdir / 'backups' / source_site['fs_safe_name']
+        backup_dir = wpsyncdir / "backups" / source_site["fs_safe_name"]
         try:
             backup_id = sorted([b.name for b in backup_dir.iterdir()])[-1]
         except FileNotFoundError as e:
@@ -244,75 +258,83 @@ def restore():
     # and if the backup_id came from the command line, we'll
     # convert it to the filesystem-safe version.
     else:
-        backup_id = backup_id.replace(':', '_')
+        backup_id = backup_id.replace(":", "_")
 
     # if no options are set, detect and use the options from the
     # backup we're going to restore.
     if not any(options.values()):
-        backup_dir = (wpsyncdir / 'backups' / source_site['fs_safe_name'] /
-                      backup_id)
-        options['database'] = (backup_dir / 'database').is_dir()
-        options['uploads'] = (backup_dir / 'uploads').is_dir()
-        options['plugins'] = (backup_dir / 'plugins').is_dir()
-        options['themes'] = (backup_dir / 'themes').is_dir()
-        options['full'] = (backup_dir / 'full').is_dir()
+        backup_dir = (
+            wpsyncdir / "backups" / source_site["fs_safe_name"] / backup_id
+        )
+        options["database"] = (backup_dir / "database").is_dir()
+        options["uploads"] = (backup_dir / "uploads").is_dir()
+        options["plugins"] = (backup_dir / "plugins").is_dir()
+        options["themes"] = (backup_dir / "themes").is_dir()
+        options["full"] = (backup_dir / "full").is_dir()
 
     with connect(dest_site) as connection:
-        _restore(wpsyncdir, source_site, dest_site, connection, backup_id,
-                 arguments['--quiet'], **options)
+        _restore(
+            wpsyncdir,
+            source_site,
+            dest_site,
+            connection,
+            backup_id,
+            arguments["--quiet"],
+            **options,
+        )
 
 
 def list_backups():
-    if arguments['--site'] is not None:
-        assert_site_exists(config, arguments['--site'])
-        site_name = arguments['--site']
-        site_names = [(site_name, config[site_name]['fs_safe_name'])]
+    if arguments["--site"] is not None:
+        assert_site_exists(config, arguments["--site"])
+        site_name = arguments["--site"]
+        site_names = [(site_name, config[site_name]["fs_safe_name"])]
     else:
-        site_names = [(site, config[site]['fs_safe_name'])
-                      for site
-                      in config.keys()]
+        site_names = [
+            (site, config[site]["fs_safe_name"]) for site in config.keys()
+        ]
     _list_backups(wpsyncdir, site_names, **options)
 
 
 def install():
-    assert_site_exists(config, arguments['<site>'])
-    site = config[arguments['<site>']]
+    assert_site_exists(config, arguments["<site>"])
+    site = config[arguments["<site>"]]
     with connect(site) as connection:
-        _install(site, connection, arguments['--quiet'])
+        _install(site, connection, arguments["--quiet"])
 
 
-    for executable_name in ['cat', 'lftp', 'rsync', 'ssh', 'scp']:
 def main():
+    for executable_name in ["cat", "lftp", "rsync", "ssh", "scp"]:
         check_required_executable(executable_name)
-    arguments = docopt(__doc__, version='PyWpsync 0.0.0')
-    (config, config_path) = get_config(arguments['--config'])
+    arguments = docopt(__doc__, version="PyWpsync 0.0.0")
+    (config, config_path) = get_config(arguments["--config"])
     wpsyncdir = get_wpsyncdir(config_path)
     options = get_options(arguments)
 
-    if arguments['--legacy']:
+    if arguments["--legacy"]:
         new_config = {}
         for site in config:
-            new_config[config[site]['name']] = config[site]
-            del config[site]['name']
+            new_config[config[site]["name"]] = config[site]
+            del config[site]["name"]
         config = new_config
 
     for site in config:
-        config[site]['name'] = site
-        config[site]['fs_safe_name'] = encode_site_name(site)
+        config[site]["name"] = site
+        config[site]["fs_safe_name"] = encode_site_name(site)
 
-    if arguments['sync'] or arguments['s']:
+    if arguments["sync"] or arguments["s"]:
         sync()
-    elif arguments['backup'] or arguments['b']:
+    elif arguments["backup"] or arguments["b"]:
         backup()
-    elif arguments['restore'] or arguments['r']:
+    elif arguments["restore"] or arguments["r"]:
         restore()
-    elif arguments['list'] or arguments['l']:
+    elif arguments["list"] or arguments["l"]:
         list_backups()
-    elif arguments['install'] or arguments['i']:
+    elif arguments["install"] or arguments["i"]:
         install()
 
-    if not arguments['--quiet']:
-        put.success('DONE')
+    if not arguments["--quiet"]:
+        put.success("DONE")
 
 
 if __name__ == "__main__":
