@@ -27,8 +27,13 @@ try {{
 }} catch (Exception $e) {{
 
     http_response_code(500); # internal server error
+    header('Content-Type: text/plain');
     echo $e->getMessage();
+    die();
 }}
+
+http_response_code(200);
+header('Content-Type: text/plain');
 """
 
 

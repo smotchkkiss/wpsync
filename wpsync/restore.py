@@ -28,8 +28,13 @@ try {{
 }} catch (Exception $e) {{
 
     http_response_code(500);
+    header('Content-Type: text/plain');
     echo $e->getMessage();
+    die();
 }}
+
+http_response_code(200);
+header('Content-Type: text/plain');
 """
 
 
@@ -54,6 +59,7 @@ $output = ob_get_clean();
 if (!$report || !empty($report->errors['results'])) {{
 
     http_response_code(500);
+    header('Content-Type: text/plain');
     if (!$report) {{
         echo "The search-replace-database-tool didn't return a report.\n";
     }}
@@ -63,7 +69,11 @@ if (!$report || !empty($report->errors['results'])) {{
             echo "$error\n";
         }}
     }}
+    die();
 }}
+
+http_response_code(200);
+header('Content-Type: text/plain');
 """
 
 

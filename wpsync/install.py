@@ -116,13 +116,16 @@ if ($success === FALSE) {{
 // remove latest.zip
 unlink($localpath);
 
+// if we made it here, no error was sent, so
+http_response_code(200);
+header('Content-Type: text/plain');
+
 // DONE -- utilities:
 function exit_with_error($message) {{
-    $protocol = $_SERVER['SERVER_PROTOCOL'];
-    $header = $protocol . ' 500 Internal Server Error';
-    header($header, true, 500);
+    http_response_code(500);
+    header('Content-Type: text/plain');
     echo $message;
-    exit();
+    die();
 }}
 
 /**

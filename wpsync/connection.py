@@ -56,10 +56,13 @@ class Connection:
             url += "/"
         url += "wpsync/run.php"
         self.cat_r(path, php_code)
+
         if "http_user" in self.site:
             auth = (self.site["http_user"], self.site["http_pass"])
         else:
             auth = None
+
+        headers = {"Accept": "text/plain"}
 
         # trust selfsigned certificate if exists, needed for SSL
         # connections to localhost
@@ -71,7 +74,7 @@ class Connection:
         else:
             verify = None
 
-        r = requests.get(url, auth=auth, verify=verify)
+        r = requests.get(url, auth=auth, headers=headers, verify=verify)
         if r.status_code != 200:
             raise RemoteExecutionError(r.text.strip())
         self.rm(path)
