@@ -5,7 +5,7 @@ from contextlib import contextmanager
 from tempfile import NamedTemporaryFile
 from pathlib import Path
 from subprocess import run
-from sh import lftp, rsync, scp, ssh, ErrorReturnCode_1
+from sh import rsync, scp, ssh, ErrorReturnCode_1
 import requests
 
 
@@ -177,59 +177,62 @@ class FTPConnection(Connection):
         self.pasw = quote(site['pass'])
         self.host = quote(site['host'])
 
-    def ftp_do(self, command):
-        user = self.user
-        pasw = self.pasw
-        host = self.host
-        return lftp('-c', f'open -u {user},{pasw} {host}; {command}; quit')
+    def lftp(self, command, capture=False):
+        completed_process = run(
+            [
+                'lftp',
+                '-c',
+                f'open -u {self.user},{self.pasw} {self.host}; {command}; quit'
+            ],
+            capture_output=capture
+        )
+        if completed_process.stdout:
+            return completed_process.stdout.decode('utf8')
+        return ''
 
     def dir_exists(self, path):
         path = path[:-1] + '[' + path[-1] + ']'
-        try:
-            res = self.ftp_do(f'glob --exist -d {quote(s(path))} && echo yes')
-        except ErrorReturnCode_1 as e:
-            return False
+        res = self.lftp(f'glob --exist -d {quote(s(path))} && echo yes',
+                        capture=True)
         return 'yes' in res
 
     def file_exists(self, path):
         path = path[:-1] + '[' + path[-1] + ']'
-        try:
-            res = self.ftp_do(f'glob --exist -f {quote(s(path))} && echo yes')
-        except ErrorReturnCode_1 as e:
-            return False
+        res = self.lftp(f'glob --exist -f {quote(s(path))} && echo yes',
+                        capture=True)
         return 'yes' in res
 
     def mkdir(self, path):
-        self.ftp_do(f'mkdir -p {quote(s(path))}')
+        self.lftp(f'mkdir -p {quote(s(path))}')
 
     def rmdir(self, path):
-        self.ftp_do(f'rm -r {quote(s(path))}')
+        self.lftp(f'rm -r {quote(s(path))}')
 
     def get(self, remote_path, local_path):
-        self.ftp_do(f'get {quote(s(remote_path))} -o {quote(s(local_path))}')
+        self.lftp(f'get {quote(s(remote_path))} -o {quote(s(local_path))}')
 
     def put(self, local_path, remote_path):
-        self.ftp_do(f'put {quote(s(local_path))} -o {quote(s(remote_path))}')
+        self.lftp(f'put {quote(s(local_path))} -o {quote(s(remote_path))}')
 
     def mirror(self, remote_path, local_path):
         cmd = 'mirror --delete'
-        self.ftp_do(f'{cmd} {quote(s(remote_path))} {quote(s(local_path))}')
+        self.lftp(f'{cmd} {quote(s(remote_path))} {quote(s(local_path))}')
 
     def mirror_r(self, local_path, remote_path, exclude=[]):
         cmd = 'mirror --delete -R'
         for pattern in exclude:
             cmd += f' --exclude {quote(pattern)}'
         cmd += f' {quote(s(local_path))} {quote(s(remote_path))}'
-        self.ftp_do(cmd)
+        self.lftp(cmd)
 
     def cat(self, path):
-        return self.ftp_do(f'cat {quote(s(path))}')
+        return self.lftp(f'cat {quote(s(path))}', capture=True)
 
     def cat_r(self, path, string):
         tmp_file = Path(NamedTemporaryFile().name)
         tmp_file.write_text(string, encoding='utf-8')
-        self.ftp_do(f'put {quote(s(tmp_file))} -o {quote(s(path))}')
+        self.lftp(f'put {quote(s(tmp_file))} -o {quote(s(path))}')
         tmp_file.unlink()
 
     def rm(self, path):
-        self.ftp_do(f'rm {quote(s(path))}')
+        self.lftp(f'rm {quote(s(path))}')
