@@ -50,8 +50,9 @@ def get_config(path):
         try:
             with open(p, "r") as config_file:
                 config.read_string(config_file.read())
-                valid_config = validate_config(config._sections)
-                normalized_config = normalize_config(valid_config)
+                defaults = validate_config_default(config._defaults)
+                valid_config = validate_config_sections(config._sections)
+                normalized_config = normalize_config(valid_config, defaults)
                 return (normalized_config, p)
         except FileNotFoundError as e:
             pass
@@ -60,7 +61,17 @@ def get_config(path):
     raise Exception("Config file not found")
 
 
-def validate_config(config):
+def validate_config_default(config):
+    schema = Schema({Optional("local_selfsigned_ca"): str,})
+    try:
+        return schema.validate(config)
+    except SchemaError as e:
+        print("An error occured while validating the configuration:")
+        print(e)
+        sys.exit(1)
+
+
+def validate_config_sections(config):
     # all options are listed twice, because I don't know how else
     # to express that http_user and http_pass can only be used
     # together
@@ -169,7 +180,7 @@ def validate_config(config):
         sys.exit(1)
 
 
-def normalize_config(config):
+def normalize_config(config, defaults):
     for site_name in config:
         site = config[site_name]
         # TODO:
@@ -196,6 +207,11 @@ def normalize_config(config):
             site["host"] = "sftp://" + site["host"]
         if "mysql_port" not in site:
             site["mysql_port"] = "3306"
+
+        # put the defaults on every site so we have them available
+        # without having to pass them around separately
+        for key in defaults:
+            site[f"_default_{key}"] = defaults[key]
     return config
 
 

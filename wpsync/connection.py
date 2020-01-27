@@ -60,7 +60,18 @@ class Connection:
             auth = (self.site['http_user'], self.site['http_pass'])
         else:
             auth = None
-        r = requests.get(url, auth=auth)
+
+        # trust selfsigned certificate if exists, needed for SSL
+        # connections to localhost
+        if (
+            self.site["protocol"] == "file"
+            and "_default_local_selfsigned_ca" in self.site
+        ):
+            verify = self.site["_default_local_selfsigned_ca"]
+        else:
+            verify = None
+
+        r = requests.get(url, auth=auth, verify=verify)
         if r.status_code != 200:
             raise RemoteExecutionError(r.text.strip())
         self.rm(path)
