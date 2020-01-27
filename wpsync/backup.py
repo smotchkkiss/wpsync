@@ -1,8 +1,8 @@
 from datetime import datetime
 from pathlib import Path
-from host_info import HostInfo
-import put
-from connection import RemoteExecutionError
+from .host_info import HostInfo
+from . import put
+from .connection import RemoteExecutionError
 
 
 this_dir = Path(__file__).resolve().parent

@@ -1,4 +1,4 @@
-import put
+from . import put
 
 
 def list_backups(wpsyncdir, site_names,

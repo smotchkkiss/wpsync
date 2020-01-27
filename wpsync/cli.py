@@ -44,7 +44,7 @@ if sys.version_info < (3, 6):
 
 import re
 from docopt import docopt
-from cli_helpers import (
+from .cli_helpers import (
     assert_site_exists,
     check_required_executable,
     encode_site_name,
@@ -52,12 +52,12 @@ from cli_helpers import (
     get_options,
     get_wpsyncdir,
 )
-from connection import connect
-from backup import backup as _backup
-from restore import restore as _restore
-from list_backups import list_backups as _list_backups
-from install import install as _install
-import put
+from .connection import connect
+from .backup import backup as _backup
+from .restore import restore as _restore
+from .list_backups import list_backups as _list_backups
+from .install import install as _install
+from . import put
 
 
 # TODO:

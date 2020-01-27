@@ -1,6 +1,6 @@
 import sys
-import put
-from connection import RemoteExecutionError
+from . import put
+from .connection import RemoteExecutionError
 
 
 # curly braces in php template are doubled to escape them
