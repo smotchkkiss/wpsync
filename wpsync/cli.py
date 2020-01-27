@@ -281,8 +281,8 @@ def install():
         _install(site, connection, arguments['--quiet'])
 
 
-if __name__ == '__main__':
     for executable_name in ['cat', 'lftp', 'rsync', 'ssh', 'scp']:
+def main():
         check_required_executable(executable_name)
     arguments = docopt(__doc__, version='PyWpsync 0.0.0')
     (config, config_path) = get_config(arguments['--config'])
@@ -313,3 +313,7 @@ if __name__ == '__main__':
 
     if not arguments['--quiet']:
         put.success('DONE')
+
+
+if __name__ == "__main__":
+    main()
