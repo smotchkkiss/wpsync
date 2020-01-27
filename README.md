@@ -16,7 +16,7 @@ poetry install
 
 Now you should be able to run wpsync from its own directory with `poetry run wpsync`.
 
-To make it accessible from anywhere, I usually make a shell script that I place in `~/bin/wpsync`:
+To make it accessible from everywhere, I usually make a shell script that I place in `~/bin/wpsync`:
 
 ```sh
 #!/bin/sh
