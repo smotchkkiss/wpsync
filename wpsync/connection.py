@@ -50,11 +50,11 @@ class Connection:
         self.rmdir(self.wpsync_dir)
 
     def run_php(self, php_code):
-        path = self.normalise("run.php")
+        path = self.normalise("nothing_special.php")
         url = self.site["base_url"]
         if url[-1] != "/":
             url += "/"
-        url += "wpsync/run.php"
+        url += "wpsync/nothing_special.php"
         self.cat_r(path, php_code)
 
         if "http_user" in self.site:
