@@ -306,7 +306,8 @@ def install(arguments, config, config_path, wpsyncdir, options):
 def main():
     for executable_name in ["cat", "lftp", "rsync", "ssh", "scp"]:
         check_required_executable(executable_name)
-    arguments = docopt(__doc__, version="PyWpsync 0.0.0")
+    # TODO load version number from ../pyproject.toml
+    arguments = docopt(__doc__, version="PyWpsync 0.1.0")
     (config, config_path) = get_config(arguments["--config"])
     wpsyncdir = get_wpsyncdir(config_path)
     options = get_options(arguments)
