@@ -4,7 +4,7 @@ from shlex import quote
 from contextlib import contextmanager
 from tempfile import NamedTemporaryFile
 from pathlib import Path
-from subprocess import run
+from subprocess import run, PIPE
 from sh import rsync, scp, ssh, ErrorReturnCode_1
 import requests
 
@@ -204,7 +204,8 @@ class FTPConnection(Connection):
                 "-c",
                 f"open -u {self.user},{self.pasw} {self.host}; {command}; quit",
             ],
-            capture_output=capture,
+            stdout=PIPE,
+            stderr=PIPE,
         )
         if completed_process.stdout:
             return completed_process.stdout.decode("utf8")
