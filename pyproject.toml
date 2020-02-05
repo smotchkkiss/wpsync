@@ -9,7 +9,7 @@ license = "MIT"
 wpsync = "wpsync.cli:main"
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.6"
 docopt = "~0.6.2"
 schema = "~0.6.8"
 sh = "~1.12.14"
