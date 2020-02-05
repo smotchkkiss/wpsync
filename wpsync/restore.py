@@ -135,7 +135,7 @@ def restore_database(source, dest, connection, backup_dir, host, quiet):
         if not quiet:
             put.info("Altering database dump to match target settings")
         try:
-            db_settings = host.get_database_settings()
+            db_settings = host["database_settings"]
         except RuntimeError as e:
             put.error(
                 f"Error: {e}" + f'\n  Create a backup for {dest["name"]} first!'
