@@ -1,6 +1,5 @@
 from datetime import datetime
 from pathlib import Path
-from .host_info import HostInfo
 from . import put
 from .connection import RemoteExecutionError
 
@@ -35,7 +34,6 @@ try {{
 def backup(
     wpsyncdir, site, connection, quiet, database, uploads, plugins, themes, full
 ):
-    host = HostInfo(wpsyncdir, site, connection)
     dt = datetime.now()
     iso_ts = dt.isoformat()[:19]
     fs_ts = f"{iso_ts[:13]}_{iso_ts[14:16]}_{iso_ts[17:]}"
