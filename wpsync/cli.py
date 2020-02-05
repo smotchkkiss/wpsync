@@ -97,6 +97,7 @@ from . import put
 #   have a trailing slash or trailing whitespace for example, or
 #   hint the user towards it!
 # - generally validate the config better
+# - make sure configured directories actually exist etc.
 # - randomise the server side dir name for better security (but
 #   make sure to remove it!)
 # - what if more people are syncing the same site at the same time?
@@ -107,6 +108,7 @@ from . import put
 #   done - this may wait forever in case a wpsync dir is left over
 #   from a crash! we should warn the user about this and advise how
 #   to manually remove the old wpsync directories.
+#   (place a lock on the server php while running?)
 # - add a 'clean' command or something to remove old backups
 # - add another 'clean' command that removes old wpsync dirs from
 #   servers
