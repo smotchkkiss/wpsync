@@ -49,6 +49,12 @@ class Connection:
     def remove_wpsync_dir(self):
         self.rmdir(self.wpsync_dir)
 
+    def cat_r(self, path, string):
+        tmp_file = Path(NamedTemporaryFile().name)
+        tmp_file.write_text(string, encoding="utf-8")
+        self.put(tmp_file, path)
+        tmp_file.unlink()
+
     def run_php(self, php_code):
         path = self.normalise("run.php")
         url = self.site["base_url"]
@@ -120,10 +126,6 @@ class FileConnection(Connection):
         with open(path, "r") as f:
             return f.read()
 
-    def cat_r(self, path, string):
-        with open(path, "w") as f:
-            return f.write(string)
-
     def rm(self, path):
         os.remove(path)
 
@@ -182,9 +184,6 @@ class SSHConnection(Connection):
 
     def cat(self, path):
         return self.ssh_do(f"cat {quote(s(path))}")
-
-    def cat_r(self, path, string):
-        self.ssh_do(f"echo {quote(string)} > {quote(s(path))}")
 
     def rm(self, path):
         self.ssh_do(f"rm {quote(s(path))}")
@@ -250,12 +249,6 @@ class FTPConnection(Connection):
 
     def cat(self, path):
         return self.lftp(f"cat {quote(s(path))}", capture=True)
-
-    def cat_r(self, path, string):
-        tmp_file = Path(NamedTemporaryFile().name)
-        tmp_file.write_text(string, encoding="utf-8")
-        self.lftp(f"put {quote(s(tmp_file))} -o {quote(s(path))}")
-        tmp_file.unlink()
 
     def rm(self, path):
         self.lftp(f"rm {quote(s(path))}")
