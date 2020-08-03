@@ -68,6 +68,8 @@ class Connection:
             and "_default_local_selfsigned_ca" in self.site
         ):
             verify = self.site["_default_local_selfsigned_ca"]
+        elif self.site['no_verify_ssl']:
+            verify = False
         else:
             verify = None
 

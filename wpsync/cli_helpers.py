@@ -112,6 +112,10 @@ def validate_config_sections(config):
                 ),
                 Optional("chown_remote"): str,
                 Optional("chgrp_remote"): str,
+                Optional('no_verify_ssl'): Regex(
+                    r'(true|false|yes|no|0|1)$',
+                    flags=re.IGNORECASE
+                ),
             },
         }
     )
@@ -163,6 +167,11 @@ def normalize_config(config, defaults):
             site['sudo_remote'] = bool(RE_TRUE.match(site['sudo_remote']))
         else:
             site['sudo_remote'] = False
+        if 'no_verify_ssl' in site:
+            site['no_verify_ssl'] = bool(RE_TRUE.match(site['no_verify_ssl']))
+        else:
+            site['no_verify_ssl'] = False
+
     return config
 
 
