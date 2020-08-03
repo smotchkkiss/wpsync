@@ -320,9 +320,9 @@ def main():
 
     aliased_config = {}
     for site in config:
-        aliased_config[site] = site
         config[site]["name"] = site
         config[site]["fs_safe_name"] = encode_site_name(site)
+        aliased_config[site] = config[site]
         try:
             alias = config[site]["alias"]
             aliased_config[alias] = config[site]
