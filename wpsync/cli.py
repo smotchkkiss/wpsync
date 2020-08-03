@@ -308,6 +308,35 @@ def main():
         check_required_executable(executable_name)
     arguments = docopt(__doc__, version="PyWpsync 0.0.0")
     (config, config_path) = get_config(arguments["--config"])
+
+    # additional validations that can't be expressed in the schema:
+    for site_name in config:
+        site = config[site_name]
+        if 'http_user' in site or 'http_pass' in site:
+            if 'http_user' not in site or 'http_pass' not in site:
+                print('http_user and http_pass keys must always be used together')
+                print(f'please check {site_name} in your config')
+                sys.exit(1)
+        if site['protocol'] == 'file':
+            if 'user' in site or 'host' in site or 'pass' in site:
+                print('no use specifying user, host or pass with protocol=file')
+                print(f'please check {site_name} in your config')
+                sys.exit(1)
+        if site['protocol'] == 'ftp':
+            if 'user' not in site or 'host' not in site or 'pass' not in site:
+                print('user, host and pass must be specified with protocol=ftp')
+                print(f'please check {site_name} in your config')
+                sys.exit(1)
+        if site['protocol'] in ['ssh', 'sftp']:
+            if 'user' not in site or 'host' not in site:
+                print('user and host must be specified with protocol=ssh|sftp')
+                print(f'please check {site_name} in your config')
+                sys.exit(1)
+            if 'pass' in site:
+                print('ssh|sftp with password is not supported')
+                print(f'please check {site_name} in your config')
+                sys.exit(1)
+
     wpsyncdir = get_wpsyncdir(config_path)
     options = get_options(arguments)
 

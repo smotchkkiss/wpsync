@@ -72,116 +72,35 @@ def validate_config_default(config):
 
 
 def validate_config_sections(config):
-    # all options are listed twice, because I don't know how else
-    # to express that http_user and http_pass can only be used
-    # together
+    # It's impossible to express in the schema that a group of
+    # dictionary keys is optional, i.e. that they can only appear
+    # together. E.g. http_user makes no sense without http_pass
+    # and vice versa. These additional constraints are being
+    # checked for in the main function in cli.py.
+    # Also certain protocols require or don't require user/host
+    # keys being set etc.
     schema = Schema(
         {
-            str: Or(
-                {
-                    Optional("alias"): str,
-                    Optional("aliases"): str,
-                    # localhost without http basic auth
-                    "protocol": "file",
-                    Optional("name"): str,  # for compatibility, will be ignored
-                    "base_url": str,
-                    "base_dir": str,
-                    "mysql_name": str,
-                    "mysql_host": str,
-                    "mysql_user": str,
-                    "mysql_pass": str,
-                    Optional("mysql_port"): str,
-                },
-                {
-                    Optional("alias"): str,
-                    Optional("aliases"): str,
-                    # localhost with http basic auth
-                    # (why would that be needed?!)
-                    "protocol": "file",
-                    Optional("name"): str,  # for compatibility, will be ignored
-                    "base_url": str,
-                    "base_dir": str,
-                    "mysql_name": str,
-                    "mysql_host": str,
-                    "mysql_user": str,
-                    "mysql_pass": str,
-                    Optional("mysql_port"): str,
-                    "http_user": str,
-                    "http_pass": str,
-                },
-                {
-                    Optional("alias"): str,
-                    Optional("aliases"): str,
-                    # FTP hosts without http basic auth
-                    "protocol": "ftp",
-                    Optional("name"): str,  # for compatibility, will be ignored
-                    "base_url": str,
-                    "base_dir": str,
-                    "user": str,
-                    "host": str,
-                    "pass": str,
-                    "mysql_name": str,
-                    "mysql_host": str,
-                    "mysql_user": str,
-                    "mysql_pass": str,
-                    Optional("mysql_port"): str,
-                },
-                {
-                    Optional("alias"): str,
-                    Optional("aliases"): str,
-                    # FTP hosts with http basic auth
-                    "protocol": "ftp",
-                    Optional("name"): str,  # for compatibility, will be ignored
-                    "base_url": str,
-                    "base_dir": str,
-                    "user": str,
-                    "host": str,
-                    "pass": str,
-                    "mysql_name": str,
-                    "mysql_host": str,
-                    "mysql_user": str,
-                    "mysql_pass": str,
-                    Optional("mysql_port"): str,
-                    "http_user": str,
-                    "http_pass": str,
-                },
-                {
-                    Optional("alias"): str,
-                    Optional("aliases"): str,
-                    # SSH hosts without http basic auth
-                    "protocol": Or("ssh", "sftp"),
-                    Optional("name"): str,  # for compatibility, will be ignored
-                    "base_url": str,
-                    "base_dir": str,
-                    "user": str,
-                    "host": str,
-                    Optional("pass"): str,
-                    "mysql_name": str,
-                    "mysql_host": str,
-                    "mysql_user": str,
-                    "mysql_pass": str,
-                    Optional("mysql_port"): str,
-                },
-                {
-                    Optional("alias"): str,
-                    Optional("aliases"): str,
-                    # SSH hosts with http basic auth
-                    "protocol": Or("ssh", "sftp"),
-                    Optional("name"): str,  # for compatibility, will be ignored
-                    "base_url": str,
-                    "base_dir": str,
-                    "user": str,
-                    "host": str,
-                    Optional("pass"): str,
-                    "mysql_name": str,
-                    "mysql_host": str,
-                    "mysql_user": str,
-                    "mysql_pass": str,
-                    Optional("mysql_port"): str,
-                    "http_user": str,
-                    "http_pass": str,
-                },
-            )
+            str: {
+                Optional("alias"): str,
+                Optional("aliases"): str,
+                # localhost with http basic auth
+                # (why would that be needed?!)
+                "protocol": Or("file", "ftp", "ssh", "sftp"),
+                Optional("name"): str,  # for compatibility, will be ignored
+                "base_url": str,
+                "base_dir": str,
+                Optional("user"): str,
+                Optional("host"): str,
+                Optional("pass"): str,
+                "mysql_name": str,
+                "mysql_host": str,
+                "mysql_user": str,
+                "mysql_pass": str,
+                Optional("mysql_port"): str,
+                Optional("http_user"): str,
+                Optional("http_pass"): str,
+            },
         }
     )
     try:
