@@ -329,7 +329,7 @@ def main():
         except KeyError:
             pass
         try:
-            aliases = map(lambda a: a.strip(), config[site]["aliases"].split(','))
+            aliases = [a.strip() for a in config[site]["aliases"].split(',')]
             for alias in aliases:
                 aliased_config[alias] = config[site]
         except KeyError:
