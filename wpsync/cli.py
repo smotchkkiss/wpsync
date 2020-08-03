@@ -318,9 +318,23 @@ def main():
             del config[site]["name"]
         config = new_config
 
+    aliased_config = {}
     for site in config:
+        aliased_config[site] = site
         config[site]["name"] = site
         config[site]["fs_safe_name"] = encode_site_name(site)
+        try:
+            alias = config[site]["alias"]
+            aliased_config[alias] = config[site]
+        except KeyError:
+            pass
+        try:
+            aliases = map(lambda a: a.strip(), config[site]["aliases"].split(','))
+            for alias in aliases:
+                aliased_config[alias] = config[site]
+        except KeyError:
+            pass
+    config = aliased_config
 
     standard_args = {
         "arguments": arguments,

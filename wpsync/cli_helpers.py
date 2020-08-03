@@ -79,6 +79,8 @@ def validate_config_sections(config):
         {
             str: Or(
                 {
+                    Optional("alias"): str,
+                    Optional("aliases"): str,
                     # localhost without http basic auth
                     "protocol": "file",
                     Optional("name"): str,  # for compatibility, will be ignored
@@ -91,6 +93,8 @@ def validate_config_sections(config):
                     Optional("mysql_port"): str,
                 },
                 {
+                    Optional("alias"): str,
+                    Optional("aliases"): str,
                     # localhost with http basic auth
                     # (why would that be needed?!)
                     "protocol": "file",
@@ -106,6 +110,8 @@ def validate_config_sections(config):
                     "http_pass": str,
                 },
                 {
+                    Optional("alias"): str,
+                    Optional("aliases"): str,
                     # FTP hosts without http basic auth
                     "protocol": "ftp",
                     Optional("name"): str,  # for compatibility, will be ignored
@@ -121,6 +127,8 @@ def validate_config_sections(config):
                     Optional("mysql_port"): str,
                 },
                 {
+                    Optional("alias"): str,
+                    Optional("aliases"): str,
                     # FTP hosts with http basic auth
                     "protocol": "ftp",
                     Optional("name"): str,  # for compatibility, will be ignored
@@ -138,6 +146,8 @@ def validate_config_sections(config):
                     "http_pass": str,
                 },
                 {
+                    Optional("alias"): str,
+                    Optional("aliases"): str,
                     # SSH hosts without http basic auth
                     "protocol": Or("ssh", "sftp"),
                     Optional("name"): str,  # for compatibility, will be ignored
@@ -153,6 +163,8 @@ def validate_config_sections(config):
                     Optional("mysql_port"): str,
                 },
                 {
+                    Optional("alias"): str,
+                    Optional("aliases"): str,
                     # SSH hosts with http basic auth
                     "protocol": Or("ssh", "sftp"),
                     Optional("name"): str,  # for compatibility, will be ignored
