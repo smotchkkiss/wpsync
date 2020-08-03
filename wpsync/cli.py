@@ -336,6 +336,11 @@ def main():
                 print('ssh|sftp with password is not supported')
                 print(f'please check {site_name} in your config')
                 sys.exit(1)
+        if site['sudo_remote']:
+            if site['protocol'] not in ['ssh']:
+                print('sudo_remote is only possible with protocol=ssh')
+                print(f'please check {site_name} in your config')
+                sys.exit(1)
 
     wpsyncdir = get_wpsyncdir(config_path)
     options = get_options(arguments)

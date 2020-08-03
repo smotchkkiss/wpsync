@@ -100,6 +100,12 @@ def validate_config_sections(config):
                 Optional("mysql_port"): str,
                 Optional("http_user"): str,
                 Optional("http_pass"): str,
+                Optional("sudo_remote"): Regex(
+                    r'(true|false|yes|no|0|1)$',
+                    flags=re.IGNORECASE
+                ),
+                Optional("chown_remote"): str,
+                Optional("chgrp_remote"): str,
             },
         }
     )
@@ -109,6 +115,9 @@ def validate_config_sections(config):
         print("An error occured while validating the configuration:")
         print(e)
         sys.exit(1)
+
+
+RE_TRUE = re.compile(r'(true|yes|1)$', flags=re.IGNORECASE)
 
 
 def normalize_config(config, defaults):
@@ -143,6 +152,11 @@ def normalize_config(config, defaults):
         # without having to pass them around separately
         for key in defaults:
             site[f"_default_{key}"] = defaults[key]
+
+        if 'sudo_remote' in site:
+            site['sudo_remote'] = bool(RE_TRUE.match(site['sudo_remote']))
+        else:
+            site['sudo_remote'] = False
     return config
 
 
