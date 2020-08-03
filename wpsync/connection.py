@@ -168,38 +168,26 @@ class SSHConnection(Connection):
         self.ssh_do(f"rm -r {quote(s(path))}")
 
     def get(self, remote_path, local_path):
+        options = ['--compress']
         if self.site['sudo_remote']:
-            run([
-                'rsync',
-                '--compress',
-                '--rsync-path=sudo rsync',
-                f'{self.user}@{self.host}:{quote(s(remote_path))}',
-                s(local_path),
-            ])
-        else:
-            run([
-                'rsync',
-                '--compress',
-                f'{self.user}@{self.host}:{quote(s(remote_path))}',
-                s(local_path),
-            ])
+            options.append('--rsync-path=sudo rsync')
+        run([
+            'rsync',
+            *options,
+            f'{self.user}@{self.host}:{quote(s(remote_path))}',
+            s(local_path),
+        ])
 
     def put(self, local_path, remote_path):
+        options = ['--compress']
         if self.site['sudo_remote']:
-            run([
-                'rsync',
-                '--compress',
-                '--rsync-path=sudo rsync',
-                s(local_path),
-                f'{self.user}@{self.host}:{quote(s(remote_path))}',
-            ])
-        else:
-            run([
-                'rsync',
-                '--compress',
-                s(local_path),
-                f'{self.user}@{self.host}:{quote(s(remote_path))}',
-            ])
+            options.append('--rsync-path=sudo rsync')
+        run([
+            'rsync',
+            *options,
+            s(local_path),
+            f'{self.user}@{self.host}:{quote(s(remote_path))}',
+        ])
         if 'chown_remote' in self.site and 'chgrp_remote' in self.site:
             owner = self.site['chown_remote']
             group = self.site['chgrp_remote']
@@ -212,25 +200,15 @@ class SSHConnection(Connection):
             self.ssh_do(f'chgrp {quote(group)} {quote(s(remote_path))}')
 
     def mirror(self, remote_path, local_path):
+        options = ['--recursive', '--del', '--compress']
         if self.site['sudo_remote']:
-            run([
-                'rsync',
-                '--recursive',
-                '--del',
-                '--compress',
-                '--rsync-path=sudo rsync',
-                f'{self.user}@{self.host}:{quote(s(remote_path))}/',
-                s(local_path),
-            ])
-        else:
-            run([
-                'rsync',
-                '--recursive',
-                '--del',
-                '--compress',
-                f'{self.user}@{self.host}:{quote(s(remote_path))}/',
-                s(local_path),
-            ])
+            options.append('--rsync-path=sudo rsync')
+        run([
+            'rsync',
+            *options,
+            f'{self.user}@{self.host}:{quote(s(remote_path))}/',
+            s(local_path),
+        ])
 
     def mirror_r(self, local_path, remote_path, exclude=[]):
         args = ["--recursive", "--del", "--compress"]
