@@ -157,6 +157,8 @@ def normalize_config(config, defaults):
             site["host"] = "sftp://" + site["host"]
         if "mysql_port" not in site:
             site["mysql_port"] = "3306"
+        if "file_url" not in site:
+            site["file_url"] = site["site_url"]
 
         # put the defaults on every site so we have them available
         # without having to pass them around separately
