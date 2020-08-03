@@ -175,7 +175,7 @@ def restore_database(source, dest, connection, backup_dir, host, quiet):
         # escape quotes in all strings formatted into php
         # templates!
         php_code = mysqlreplace_php_template.format(
-            search=source["base_url"], replace=dest["base_url"], **dest
+            search=source["site_url"], replace=dest["site_url"], **dest
         )
         mysqlreplace_library_local = this_dir / "srdb.class.php"
         mysqlreplace_library_remote = connection.normalise("srdb.class.php")

@@ -90,10 +90,10 @@ from . import put
 # - maybe update the PHP dependencies
 # - add support for (project-)local configuration files and local
 #   'wpsyncdir's in the respective location(s) - or find a way to
-#   uniquely identify sites, for example by base_url (or a
+#   uniquely identify sites, for example by site_url (or a
 #   filesystem-safe version of that), or a combination of the site
 #   name and the path of the configuration file it belongs to ...
-# - normalise config options like base_url to make sure they don't
+# - normalise config options like site_url to make sure they don't
 #   have a trailing slash or trailing whitespace for example, or
 #   hint the user towards it!
 # - generally validate the config better

@@ -51,7 +51,7 @@ class Connection:
 
     def run_php(self, php_code):
         path = self.normalise("run.php")
-        url = self.site["base_url"]
+        url = self.site["file_url"]
         if url[-1] != "/":
             url += "/"
         url += "wpsync/run.php"

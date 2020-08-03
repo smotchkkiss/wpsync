@@ -3,7 +3,8 @@ from configparser import ConfigParser
 from urllib.parse import quote, unquote
 import sys
 import os
-from schema import Schema, Or, Optional, SchemaError
+import re
+from schema import Schema, Or, Optional, SchemaError, Regex
 
 
 # https://stackoverflow.com/a/377028
@@ -88,7 +89,12 @@ def validate_config_sections(config):
                 # (why would that be needed?!)
                 "protocol": Or("file", "ftp", "ssh", "sftp"),
                 Optional("name"): str,  # for compatibility, will be ignored
-                "base_url": str,
+                # what a visitor would think the site's url is;
+                # also the site url used in WordPress, permalinks etc
+                "site_url": str,
+                # the 'physical' url to use, for retrieving files in the
+                # wpsync directory
+                Optional('file_url'): str,
                 "base_dir": str,
                 Optional("user"): str,
                 Optional("host"): str,
