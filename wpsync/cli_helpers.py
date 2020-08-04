@@ -5,6 +5,7 @@ import sys
 import os
 import re
 from schema import Schema, Or, Optional, SchemaError, Regex
+from . import put
 
 
 # https://stackoverflow.com/a/377028
@@ -91,7 +92,8 @@ def validate_config_sections(config):
                 Optional("name"): str,  # for compatibility, will be ignored
                 # what a visitor would think the site's url is;
                 # also the site url used in WordPress, permalinks etc
-                "site_url": str,
+                # TODO remove support for legacy base_url
+                Or("site_url", "base_url"): str,
                 # the 'physical' url to use, for retrieving files in the
                 # wpsync directory
                 Optional('file_url'): str,
@@ -157,6 +159,17 @@ def normalize_config(config, defaults):
             site["host"] = "sftp://" + site["host"]
         if "mysql_port" not in site:
             site["mysql_port"] = "3306"
+
+        # support for legacy key base_url
+        # TODO remove when no longer needed
+        if 'site_url' not in site:
+            put.warn(
+                'option base_url will be removed in the future.'
+                 ' please use site_url instead'
+            )
+            site['site_url'] = site['base_url']
+            del site['base_url']
+
         if "file_url" not in site:
             site["file_url"] = site["site_url"]
 
