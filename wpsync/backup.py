@@ -55,9 +55,7 @@ def backup(
         php_code = mysqldump_php_template.format(**site)
         mysqldump_library_local = this_dir / "Mysqldump.php"
         mysqldump_library_remote = connection.normalise("Mysqldump.php")
-        connection.put(
-            str(mysqldump_library_local.resolve()), mysqldump_library_remote
-        )
+        connection.put(mysqldump_library_local, mysqldump_library_remote)
         # TODO Connection#run_php returns the response text, do
         # something with it?
         try:

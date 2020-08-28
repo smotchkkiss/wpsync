@@ -3,7 +3,9 @@ from configparser import ConfigParser
 from urllib.parse import quote, unquote
 import sys
 import os
-from schema import Schema, Or, Optional, SchemaError
+import re
+from schema import Schema, Or, Optional, SchemaError, Regex
+from . import put
 
 
 # https://stackoverflow.com/a/377028
@@ -72,104 +74,51 @@ def validate_config_default(config):
 
 
 def validate_config_sections(config):
-    # all options are listed twice, because I don't know how else
-    # to express that http_user and http_pass can only be used
-    # together
+    # It's impossible to express in the schema that a group of
+    # dictionary keys is optional, i.e. that they can only appear
+    # together. E.g. http_user makes no sense without http_pass
+    # and vice versa. These additional constraints are being
+    # checked for in the main function in cli.py.
+    # Also certain protocols require or don't require user/host
+    # keys being set etc.
     schema = Schema(
         {
-            str: Or(
-                {
-                    # localhost without http basic auth
-                    "protocol": "file",
-                    Optional("name"): str,  # for compatibility, will be ignored
-                    "base_url": str,
-                    "base_dir": str,
-                    "mysql_name": str,
-                    "mysql_host": str,
-                    "mysql_user": str,
-                    "mysql_pass": str,
-                    Optional("mysql_port"): str,
-                },
-                {
-                    # localhost with http basic auth
-                    # (why would that be needed?!)
-                    "protocol": "file",
-                    Optional("name"): str,  # for compatibility, will be ignored
-                    "base_url": str,
-                    "base_dir": str,
-                    "mysql_name": str,
-                    "mysql_host": str,
-                    "mysql_user": str,
-                    "mysql_pass": str,
-                    Optional("mysql_port"): str,
-                    "http_user": str,
-                    "http_pass": str,
-                },
-                {
-                    # FTP hosts without http basic auth
-                    "protocol": "ftp",
-                    Optional("name"): str,  # for compatibility, will be ignored
-                    "base_url": str,
-                    "base_dir": str,
-                    "user": str,
-                    "host": str,
-                    "pass": str,
-                    "mysql_name": str,
-                    "mysql_host": str,
-                    "mysql_user": str,
-                    "mysql_pass": str,
-                    Optional("mysql_port"): str,
-                },
-                {
-                    # FTP hosts with http basic auth
-                    "protocol": "ftp",
-                    Optional("name"): str,  # for compatibility, will be ignored
-                    "base_url": str,
-                    "base_dir": str,
-                    "user": str,
-                    "host": str,
-                    "pass": str,
-                    "mysql_name": str,
-                    "mysql_host": str,
-                    "mysql_user": str,
-                    "mysql_pass": str,
-                    Optional("mysql_port"): str,
-                    "http_user": str,
-                    "http_pass": str,
-                },
-                {
-                    # SSH hosts without http basic auth
-                    "protocol": Or("ssh", "sftp"),
-                    Optional("name"): str,  # for compatibility, will be ignored
-                    "base_url": str,
-                    "base_dir": str,
-                    "user": str,
-                    "host": str,
-                    Optional("pass"): str,
-                    "mysql_name": str,
-                    "mysql_host": str,
-                    "mysql_user": str,
-                    "mysql_pass": str,
-                    Optional("mysql_port"): str,
-                },
-                {
-                    # SSH hosts with http basic auth
-                    "protocol": Or("ssh", "sftp"),
-                    Optional("name"): str,  # for compatibility, will be ignored
-                    "base_url": str,
-                    "base_dir": str,
-                    "user": str,
-                    "host": str,
-                    Optional("pass"): str,
-                    "mysql_name": str,
-                    "mysql_host": str,
-                    "mysql_user": str,
-                    "mysql_pass": str,
-                    Optional("mysql_port"): str,
-                    "http_user": str,
-                    "http_pass": str,
-                },
-            )
+            str: {
+                Optional("alias"): str,
+                Optional("aliases"): str,
+                # localhost with http basic auth
+                # (why would that be needed?!)
+                "protocol": Or("file", "ftp", "ssh", "sftp"),
+                Optional("name"): str,  # for compatibility, will be ignored
+                # what a visitor would think the site's url is;
+                # also the site url used in WordPress, permalinks etc
+                # TODO remove support for legacy base_url
+                Or("site_url", "base_url"): str,
+                # the 'physical' url to use, for retrieving files in the
+                # wpsync directory
+                Optional('file_url'): str,
+                "base_dir": str,
+                Optional("user"): str,
+                Optional("host"): str,
+                Optional("pass"): str,
+                "mysql_name": str,
+                "mysql_host": str,
+                "mysql_user": str,
+                "mysql_pass": str,
+                Optional("mysql_port"): str,
+                Optional("http_user"): str,
+                Optional("http_pass"): str,
+                Optional("sudo_remote"): Regex(
+                    r'(true|false|yes|no|0|1)$',
+                    flags=re.IGNORECASE
+                ),
+                Optional("chown_remote"): str,
+                Optional("chgrp_remote"): str,
+                Optional('no_verify_ssl'): Regex(
+                    r'(true|false|yes|no|0|1)$',
+                    flags=re.IGNORECASE
+                ),
+            },
         }
     )
     try:
@@ -178,6 +127,9 @@ def validate_config_sections(config):
         print("An error occured while validating the configuration:")
         print(e)
         sys.exit(1)
+
+
+RE_TRUE = re.compile(r'(true|yes|1)$', flags=re.IGNORECASE)
 
 
 def normalize_config(config, defaults):
@@ -208,10 +160,33 @@ def normalize_config(config, defaults):
         if "mysql_port" not in site:
             site["mysql_port"] = "3306"
 
+        # support for legacy key base_url
+        # TODO remove when no longer needed
+        if 'site_url' not in site:
+            put.warn(
+                'option base_url will be removed in the future.'
+                 ' please use site_url instead'
+            )
+            site['site_url'] = site['base_url']
+            del site['base_url']
+
+        if "file_url" not in site:
+            site["file_url"] = site["site_url"]
+
         # put the defaults on every site so we have them available
         # without having to pass them around separately
         for key in defaults:
             site[f"_default_{key}"] = defaults[key]
+
+        if 'sudo_remote' in site:
+            site['sudo_remote'] = bool(RE_TRUE.match(site['sudo_remote']))
+        else:
+            site['sudo_remote'] = False
+        if 'no_verify_ssl' in site:
+            site['no_verify_ssl'] = bool(RE_TRUE.match(site['no_verify_ssl']))
+        else:
+            site['no_verify_ssl'] = False
+
     return config
 
 

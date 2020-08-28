@@ -90,10 +90,10 @@ from . import put
 # - maybe update the PHP dependencies
 # - add support for (project-)local configuration files and local
 #   'wpsyncdir's in the respective location(s) - or find a way to
-#   uniquely identify sites, for example by base_url (or a
+#   uniquely identify sites, for example by site_url (or a
 #   filesystem-safe version of that), or a combination of the site
 #   name and the path of the configuration file it belongs to ...
-# - normalise config options like base_url to make sure they don't
+# - normalise config options like site_url to make sure they don't
 #   have a trailing slash or trailing whitespace for example, or
 #   hint the user towards it!
 # - generally validate the config better
@@ -309,6 +309,40 @@ def main():
         check_required_executable(executable_name)
     arguments = docopt(__doc__, version="PyWpsync 0.0.0")
     (config, config_path) = get_config(arguments["--config"])
+
+    # additional validations that can't be expressed in the schema:
+    for site_name in config:
+        site = config[site_name]
+        if 'http_user' in site or 'http_pass' in site:
+            if 'http_user' not in site or 'http_pass' not in site:
+                print('http_user and http_pass keys must always be used together')
+                print(f'please check {site_name} in your config')
+                sys.exit(1)
+        if site['protocol'] == 'file':
+            if 'user' in site or 'host' in site or 'pass' in site:
+                print('no use specifying user, host or pass with protocol=file')
+                print(f'please check {site_name} in your config')
+                sys.exit(1)
+        if site['protocol'] == 'ftp':
+            if 'user' not in site or 'host' not in site or 'pass' not in site:
+                print('user, host and pass must be specified with protocol=ftp')
+                print(f'please check {site_name} in your config')
+                sys.exit(1)
+        if site['protocol'] in ['ssh', 'sftp']:
+            if 'user' not in site or 'host' not in site:
+                print('user and host must be specified with protocol=ssh|sftp')
+                print(f'please check {site_name} in your config')
+                sys.exit(1)
+            if 'pass' in site:
+                print('ssh|sftp with password is not supported')
+                print(f'please check {site_name} in your config')
+                sys.exit(1)
+        if site['sudo_remote']:
+            if site['protocol'] not in ['ssh']:
+                print('sudo_remote is only possible with protocol=ssh')
+                print(f'please check {site_name} in your config')
+                sys.exit(1)
+
     wpsyncdir = get_wpsyncdir(config_path)
     options = get_options(arguments)
 
@@ -319,9 +353,23 @@ def main():
             del config[site]["name"]
         config = new_config
 
+    aliased_config = {}
     for site in config:
         config[site]["name"] = site
         config[site]["fs_safe_name"] = encode_site_name(site)
+        aliased_config[site] = config[site]
+        try:
+            alias = config[site]["alias"]
+            aliased_config[alias] = config[site]
+        except KeyError:
+            pass
+        try:
+            aliases = [a.strip() for a in config[site]["aliases"].split(',')]
+            for alias in aliases:
+                aliased_config[alias] = config[site]
+        except KeyError:
+            pass
+    config = aliased_config
 
     standard_args = {
         "arguments": arguments,

@@ -57,7 +57,7 @@ class Connection:
 
     def run_php(self, php_code):
         path = self.normalise("run.php")
-        url = self.site["base_url"]
+        url = self.site["file_url"]
         if url[-1] != "/":
             url += "/"
         url += "wpsync/run.php"
@@ -74,6 +74,8 @@ class Connection:
             and "_default_local_selfsigned_ca" in self.site
         ):
             verify = self.site["_default_local_selfsigned_ca"]
+        elif self.site['no_verify_ssl']:
+            verify = False
         else:
             verify = None
 
@@ -137,50 +139,98 @@ class SSHConnection(Connection):
         self.host = quote(site["host"])
 
     def ssh_do(self, command):
-        return ssh(f"{self.user}@{self.host}", command)
+        if self.site['sudo_remote']:
+            process = run(['ssh', '-t', f'{self.user}@{self.host}', 'sudo ' + command])
+        else:
+            process = run(['ssh', f'{self.user}@{self.host}', command])
+        return process
 
     def dir_exists(self, path):
-        try:
-            res = self.ssh_do(f"test -d {quote(s(path))} && echo yes")
-        except ErrorReturnCode_1 as e:
-            return False
-        return "yes" in res
+        process = self.ssh_do(f'test -d {quote(s(path))}')
+        return process.returncode == 0
 
     def file_exists(self, path):
-        try:
-            res = self.ssh_do(f"test -f {quote(s(path))} && echo yes")
-        except ErrorReturnCode_1 as e:
-            return False
-        return "yes" in res
+        process = self.ssh_do(f'test -f {quote(s(path))}')
+        return process.returncode == 0
 
     def mkdir(self, path):
         self.ssh_do(f"mkdir {quote(s(path))}")
+        if 'chown_remote' in self.site and 'chgrp_remote' in self.site:
+            owner = self.site['chown_remote']
+            group = self.site['chgrp_remote']
+            self.ssh_do(f'chown {quote(owner)}:{quote(group)} {quote(s(path))}')
+        elif 'chown_remote' in self.site:
+            owner = self.site['chown_remote']
+            self.ssh_do(f'chown {quote(owner)} {quote(s(path))}')
+        elif 'chgrp_remote' in self.site:
+            group = self.site['chgrp_remote']
+            self.ssh_do(f'chgrp {quote(group)} {quote(s(path))}')
 
     def rmdir(self, path):
         self.ssh_do(f"rm -r {quote(s(path))}")
 
     def get(self, remote_path, local_path):
-        scp(f"{self.user}@{self.host}:{quote(s(remote_path))}", s(local_path))
+        options = ['--compress']
+        if self.site['sudo_remote']:
+            options.append('--rsync-path=sudo rsync')
+        run([
+            'rsync',
+            *options,
+            f'{self.user}@{self.host}:{quote(s(remote_path))}',
+            s(local_path),
+        ])
 
     def put(self, local_path, remote_path):
-        scp(local_path, f"{self.user}@{self.host}:{quote(s(remote_path))}")
+        options = ['--compress']
+        if self.site['sudo_remote']:
+            options.append('--rsync-path=sudo rsync')
+        run([
+            'rsync',
+            *options,
+            s(local_path),
+            f'{self.user}@{self.host}:{quote(s(remote_path))}',
+        ])
+        if 'chown_remote' in self.site and 'chgrp_remote' in self.site:
+            owner = self.site['chown_remote']
+            group = self.site['chgrp_remote']
+            self.ssh_do(f'chown {quote(owner)}:{quote(group)} {quote(s(remote_path))}')
+        elif 'chown_remote' in self.site:
+            owner = self.site['chown_remote']
+            self.ssh_do(f'chown {quote(owner)} {quote(s(remote_path))}')
+        elif 'chgrp_remote' in self.site:
+            group = self.site['chgrp_remote']
+            self.ssh_do(f'chgrp {quote(group)} {quote(s(remote_path))}')
 
     def mirror(self, remote_path, local_path):
-        rsync(
-            "--recursive",
-            "--del",
-            "--compress",
-            f"{self.user}@{self.host}:{quote(s(remote_path))}/",
+        options = ['--recursive', '--del', '--compress']
+        if self.site['sudo_remote']:
+            options.append('--rsync-path=sudo rsync')
+        run([
+            'rsync',
+            *options,
+            f'{self.user}@{self.host}:{quote(s(remote_path))}/',
             s(local_path),
-        )
+        ])
 
     def mirror_r(self, local_path, remote_path, exclude=[]):
         args = ["--recursive", "--del", "--compress"]
         for pattern in exclude:
             args.append(f"--exclude={quote(pattern)}")
+        if self.site['sudo_remote']:
+            args.append('--rsync-path=sudo rsync')
         args.append(s(local_path) + "/")
         args.append(f"{self.user}@{self.host}:{quote(s(remote_path))}")
-        rsync(*args)
+        run(['rsync', *args])
+        if 'chown_remote' in self.site and 'chgrp_remote' in self.site:
+            owner = self.site['chown_remote']
+            group = self.site['chgrp_remote']
+            self.ssh_do(f'chown -R {quote(owner)}:{quote(group)} {quote(s(path))}')
+        elif 'chown_remote' in self.site:
+            owner = self.site['chown_remote']
+            self.ssh_do(f'chown -R {quote(owner)} {quote(s(path))}')
+        elif 'chgrp_remote' in self.site:
+            group = self.site['chgrp_remote']
+            self.ssh_do(f'chgrp -R {quote(group)} {quote(s(path))}')
 
     def cat(self, path):
         return self.ssh_do(f"cat {quote(s(path))}")
