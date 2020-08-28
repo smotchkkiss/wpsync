@@ -164,7 +164,7 @@ def normalize_config(config, defaults):
         # TODO remove when no longer needed
         if 'site_url' not in site:
             put.warn(
-                'option base_url will be removed in the future.'
+                f'{site_name}: option base_url will be removed in the future.'
                  ' please use site_url instead'
             )
             site['site_url'] = site['base_url']
