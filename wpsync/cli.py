@@ -139,7 +139,8 @@ from . import put
 # - add a --only-files option to --full, or think of a better way,
 #   but make it possible to explicitly include/exclude the database
 # - also add an option to --full about wether to include or exclude
-#   the .htaccess file (when syncing to another site)
+#   the .htaccess and wp-config.php files (when syncing to another
+#   site)
 # - or are the above 2 points a case of YAGNI and we can just go
 #   with some default and in the rare cases where we need more
 #   options we just do it by hand?
