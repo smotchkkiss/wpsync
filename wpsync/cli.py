@@ -343,7 +343,3 @@ def main():
 
     if not arguments["--quiet"]:
         put.success("DONE")
-
-
-if __name__ == "__main__":
-    main()
