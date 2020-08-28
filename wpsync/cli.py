@@ -71,10 +71,10 @@ from . import put
 # - support databases with multiple installations or other stuff
 #   than wordpress in them, add an optional 'mysql_prefix'
 #   configuration option for that
-# - unify all php code together into one client.php so we only have
+# - unify all php code together into one server.php so we only have
 #   to upload it once on connect
-# - maybe add an option to persistently install the client? (no!)
-# - make the client safer by using http simple auth with
+# - maybe add an option to persistently install the server? (no!)
+# - make the server safer by using http simple auth with
 #   automatically, per-connection generated passwords
 # - would it somehow be possible to make [site] an optional
 #   argument to restore (and not an option?)
