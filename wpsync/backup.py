@@ -8,6 +8,10 @@ from .connection import RemoteExecutionError
 this_dir = Path(__file__).resolve().parent
 mysqldump_php_template = """<?php
 
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 include_once(__DIR__ . '/Mysqldump.php');
 
 try {{
