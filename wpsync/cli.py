@@ -107,9 +107,15 @@ from . import put
 #   done - this may wait forever in case a wpsync dir is left over
 #   from a crash! we should warn the user about this and advise how
 #   to manually remove the old wpsync directories.
+#   I HAVE AN IDEA FOR THIS.
+#   if a wpsync dir already exists on the server, warn and exit.
+#   add a --force option though that removes/overwrites the
+#   existing dirs in case the user is sure that no one else is
+#   syncing!
 # - add a 'clean' command or something to remove old backups
 # - add another 'clean' command that removes old wpsync dirs from
 #   servers
+# - auto-run the clean command at least once a day or so
 # - but by all means try to remove the wpsync dir, maybe with a
 #   python atexit hook or something that will run in almost every
 #   case except for power outage or sudden connection loss or
