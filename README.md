@@ -2,6 +2,14 @@
 
 Sync WordPress installations across local, ftp, sftp and ssh hosts
 
+**NOTE:** I changed the name of the default branch from `master` to `main`. To reflect the changes in your local repository, run the following commands:
+```sh
+git fetch --all
+git remote set-head origin -a
+git branch --set-upstream-to origin/main
+git branch -m master main
+```
+
 ## Installation
 
 wpsync uses the [pipenv](https://pipenv.pypa.io/) package/dependency manager, so make sure you have it installed.
