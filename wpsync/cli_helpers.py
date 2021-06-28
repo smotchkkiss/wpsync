@@ -153,10 +153,6 @@ def normalize_config(config, defaults):
             )
         if site["base_dir"] and site["base_dir"][-1] != "/":
             site["base_dir"] += "/"
-        if site["protocol"] == "sftp":
-            site["protocol"] = "ftp"
-            site["pass"] = ""
-            site["host"] = "sftp://" + site["host"]
         if "mysql_port" not in site:
             site["mysql_port"] = "3306"
 

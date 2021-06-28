@@ -244,7 +244,10 @@ class FTPConnection(Connection):
         super().__init__(site)
         self.user = quote(site["user"])
         self.pasw = quote(site["pass"])
-        self.host = quote(site["host"])
+        if site["protocol"] == "sftp":
+            self.host = quote("sftp://" + site["host"])
+        else:
+            self.host = quote(site["host"])
 
     def lftp(self, command, capture=False):
         completed_process = run(

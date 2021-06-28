@@ -334,14 +334,17 @@ def main():
                 print('user, host and pass must be specified with protocol=ftp')
                 print(f'please check {site_name} in your config')
                 sys.exit(1)
-        if site['protocol'] in ['ssh', 'sftp']:
-            if 'user' not in site or 'host' not in site:
-                print('user and host must be specified with protocol=ssh|sftp')
-                print(f'please check {site_name} in your config')
+        if site["protocol"] in ["ssh", "sftp"]:
+            if "user" not in site or "host" not in site:
+                print(
+                    "user and host must be specified with protocol=ssh|sftp"
+                )
+                print(f"please check {site_name} in your config")
                 sys.exit(1)
-            if 'pass' in site:
-                print('ssh|sftp with password is not supported')
-                print(f'please check {site_name} in your config')
+        if site["protocol"] == "ssh":
+            if "pass" in site:
+                print("ssh with password is not supported")
+                print(f"please check {site_name} in your config")
                 sys.exit(1)
         if site['sudo_remote']:
             if site['protocol'] not in ['ssh']:
