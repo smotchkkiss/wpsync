@@ -84,6 +84,8 @@ class Connection:
             raise RemoteExecutionError(r.text.strip())
         if "error" in r.text or "Error" in r.text or "ERROR" in r.text:
             raise RemoteExecutionError(r.text.strip())
+        if "warning" in r.text or "Warning" in r.text or "WARNING" in r.text:
+            raise RemoteExecutionError(r.text.strip())
         self.rm(path)
         return r.text
 
