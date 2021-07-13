@@ -84,8 +84,13 @@ class Connection:
             raise RemoteExecutionError(r.text.strip())
         if "error" in r.text or "Error" in r.text or "ERROR" in r.text:
             raise RemoteExecutionError(r.text.strip())
-        if "warning" in r.text or "Warning" in r.text or "WARNING" in r.text:
-            raise RemoteExecutionError(r.text.strip())
+        # this makes replacing database urls fail on some PHP
+        # versions because of an ambiguous continue in a switch
+        # statement in the srdb tool
+        # so I guess we'll rather not learn about so many warnings
+        # or maybe just print them but don't raise
+        # if "warning" in r.text or "Warning" in r.text or "WARNING" in r.text:
+        #     raise RemoteExecutionError(r.text.strip())
         self.rm(path)
         return r.text
 
