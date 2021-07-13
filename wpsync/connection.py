@@ -82,6 +82,8 @@ class Connection:
         r = requests.get(url, auth=auth, verify=verify)
         if r.status_code != 200:
             raise RemoteExecutionError(r.text.strip())
+        if "error" in r.text or "Error" in r.text or "ERROR" in r.text:
+            raise RemoteExecutionError(r.text.strip())
         self.rm(path)
         return r.text
 
