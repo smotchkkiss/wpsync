@@ -1,5 +1,7 @@
+import json
+import sys
+
 from argparse import ArgumentParser, Namespace
-from sys import argv, exit
 from typing import List, NamedTuple, Optional
 
 
@@ -10,7 +12,7 @@ MYSQLDUMP_URL = "https://raw.githubusercontent.com/ifsnop/mysqldump-php/v2.9/src
 
 
 def main(argv: List[str] = None):
-    dings = SiteConfiguration(site_name="wurm")
+    # dings = SiteConfiguration(site_name="wurm")
 
     main_parser = ArgumentParser(
         prog="wpsync",
@@ -30,6 +32,12 @@ def main(argv: List[str] = None):
     # NOTE I never use this
     main_parser.add_argument(
         "-c", "--config", help="use the config file specified"
+    )
+    main_parser.add_argument(
+        "-P",
+        "--print-config",
+        action="store_true",
+        help="print configuration and exit",
     )
 
     subparsers = main_parser.add_subparsers()
@@ -173,11 +181,24 @@ def main(argv: List[str] = None):
     )
     install_parser.set_defaults(func=install)
 
-    args = main_parser.parse_args()
+    args = main_parser.parse_args(argv)
+
+    if args.print_config:
+        print(
+            json.dumps(
+                {
+                    "config": args.config,
+                    "print_config": args.print_config,
+                    "quiet": args.quiet,
+                    "version": args.version,
+                }
+            )
+        )
+        return
 
     if args.version:
         print("v" + WPSYNC_VERSION)
-        exit()
+        return
 
     # TODO of course remove this print and also validate the
     # main arguments ("options"?)
@@ -206,7 +227,7 @@ def main(argv: List[str] = None):
         # TODO bail if no subcommand was called --
         # I guess args.func wouldn't be set then?
         print("y u no call subcommand")
-        exit()
+        return
     args.func(args)
     # TODO in the jeweilig functions:
     # validate --arguments (combinations of them)
@@ -428,5 +449,21 @@ def backup(installation):
     pass
 
 
+def sync():
+    pass
+
+
+def restore():
+    pass
+
+
+def list_backups():
+    pass
+
+
+def install():
+    pass
+
+
 if __name__ == "__main__":
-    main(argv)
+    main(sys.argv)
