@@ -15,7 +15,9 @@ def check_required_executable(executable_name):
         exec_path = os.path.join(path, executable_name)
         if os.path.isfile(exec_path) and os.access(exec_path, os.X_OK):
             return
-    print(f"wpsync requires {executable_name} to be installed on your system.")
+    print(
+        f"wpsync requires {executable_name} to be installed on your system."
+    )
     sys.exit(1)
 
 
@@ -64,7 +66,11 @@ def get_config(path):
 
 
 def validate_config_default(config):
-    schema = Schema({Optional("local_selfsigned_ca"): str,})
+    schema = Schema(
+        {
+            Optional("local_selfsigned_ca"): str,
+        }
+    )
     try:
         return schema.validate(config)
     except SchemaError as e:
@@ -96,7 +102,7 @@ def validate_config_sections(config):
                 Or("site_url", "base_url"): str,
                 # the 'physical' url to use, for retrieving files in the
                 # wpsync directory
-                Optional('file_url'): str,
+                Optional("file_url"): str,
                 "base_dir": str,
                 Optional("user"): str,
                 Optional("host"): str,
@@ -109,14 +115,12 @@ def validate_config_sections(config):
                 Optional("http_user"): str,
                 Optional("http_pass"): str,
                 Optional("sudo_remote"): Regex(
-                    r'(true|false|yes|no|0|1)$',
-                    flags=re.IGNORECASE
+                    r"(true|false|yes|no|0|1)$", flags=re.IGNORECASE
                 ),
                 Optional("chown_remote"): str,
                 Optional("chgrp_remote"): str,
-                Optional('no_verify_ssl'): Regex(
-                    r'(true|false|yes|no|0|1)$',
-                    flags=re.IGNORECASE
+                Optional("no_verify_ssl"): Regex(
+                    r"(true|false|yes|no|0|1)$", flags=re.IGNORECASE
                 ),
             },
         }
@@ -129,7 +133,7 @@ def validate_config_sections(config):
         sys.exit(1)
 
 
-RE_TRUE = re.compile(r'(true|yes|1)$', flags=re.IGNORECASE)
+RE_TRUE = re.compile(r"(true|yes|1)$", flags=re.IGNORECASE)
 
 
 def normalize_config(config, defaults):
@@ -158,13 +162,13 @@ def normalize_config(config, defaults):
 
         # support for legacy key base_url
         # TODO remove when no longer needed
-        if 'site_url' not in site:
+        if "site_url" not in site:
             put.warn(
-                f'{site_name}: option base_url will be removed in the future.'
-                 ' please use site_url instead'
+                f"{site_name}: option base_url will be removed in the future."
+                " please use site_url instead"
             )
-            site['site_url'] = site['base_url']
-            del site['base_url']
+            site["site_url"] = site["base_url"]
+            del site["base_url"]
 
         if "file_url" not in site:
             site["file_url"] = site["site_url"]
@@ -174,14 +178,14 @@ def normalize_config(config, defaults):
         for key in defaults:
             site[f"_default_{key}"] = defaults[key]
 
-        if 'sudo_remote' in site:
-            site['sudo_remote'] = bool(RE_TRUE.match(site['sudo_remote']))
+        if "sudo_remote" in site:
+            site["sudo_remote"] = bool(RE_TRUE.match(site["sudo_remote"]))
         else:
-            site['sudo_remote'] = False
-        if 'no_verify_ssl' in site:
-            site['no_verify_ssl'] = bool(RE_TRUE.match(site['no_verify_ssl']))
+            site["sudo_remote"] = False
+        if "no_verify_ssl" in site:
+            site["no_verify_ssl"] = bool(RE_TRUE.match(site["no_verify_ssl"]))
         else:
-            site['no_verify_ssl'] = False
+            site["no_verify_ssl"] = False
 
     return config
 

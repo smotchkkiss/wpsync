@@ -319,20 +319,26 @@ def main():
     # additional validations that can't be expressed in the schema:
     for site_name in config:
         site = config[site_name]
-        if 'http_user' in site or 'http_pass' in site:
-            if 'http_user' not in site or 'http_pass' not in site:
-                print('http_user and http_pass keys must always be used together')
-                print(f'please check {site_name} in your config')
+        if "http_user" in site or "http_pass" in site:
+            if "http_user" not in site or "http_pass" not in site:
+                print(
+                    "http_user and http_pass keys must always be used together"
+                )
+                print(f"please check {site_name} in your config")
                 sys.exit(1)
-        if site['protocol'] == 'file':
-            if 'user' in site or 'host' in site or 'pass' in site:
-                print('no use specifying user, host or pass with protocol=file')
-                print(f'please check {site_name} in your config')
+        if site["protocol"] == "file":
+            if "user" in site or "host" in site or "pass" in site:
+                print(
+                    "no use specifying user, host or pass with protocol=file"
+                )
+                print(f"please check {site_name} in your config")
                 sys.exit(1)
-        if site['protocol'] == 'ftp':
-            if 'user' not in site or 'host' not in site or 'pass' not in site:
-                print('user, host and pass must be specified with protocol=ftp')
-                print(f'please check {site_name} in your config')
+        if site["protocol"] == "ftp":
+            if "user" not in site or "host" not in site or "pass" not in site:
+                print(
+                    "user, host and pass must be specified with protocol=ftp"
+                )
+                print(f"please check {site_name} in your config")
                 sys.exit(1)
         if site["protocol"] in ["ssh", "sftp"]:
             if "user" not in site or "host" not in site:
@@ -346,10 +352,10 @@ def main():
                 print("ssh with password is not supported")
                 print(f"please check {site_name} in your config")
                 sys.exit(1)
-        if site['sudo_remote']:
-            if site['protocol'] not in ['ssh']:
-                print('sudo_remote is only possible with protocol=ssh')
-                print(f'please check {site_name} in your config')
+        if site["sudo_remote"]:
+            if site["protocol"] not in ["ssh"]:
+                print("sudo_remote is only possible with protocol=ssh")
+                print(f"please check {site_name} in your config")
                 sys.exit(1)
 
     wpsyncdir = get_wpsyncdir(config_path)
@@ -373,7 +379,7 @@ def main():
         except KeyError:
             pass
         try:
-            aliases = [a.strip() for a in config[site]["aliases"].split(',')]
+            aliases = [a.strip() for a in config[site]["aliases"].split(",")]
             for alias in aliases:
                 aliased_config[alias] = config[site]
         except KeyError:
