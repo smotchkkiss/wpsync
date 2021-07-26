@@ -184,16 +184,7 @@ def main(argv: List[str] = None):
     args = main_parser.parse_args(argv)
 
     if args.print_config:
-        print(
-            json.dumps(
-                {
-                    "config": args.config,
-                    "print_config": args.print_config,
-                    "quiet": args.quiet,
-                    "version": args.version,
-                }
-            )
-        )
+        print(json.dumps(vars(args)))
         return
 
     if args.version:
