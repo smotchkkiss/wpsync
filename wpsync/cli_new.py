@@ -69,7 +69,7 @@ def main(argv: List[str] = None):
         action="store_true",
         help="sync the database and the complete WordPress installation",
     )
-    sync_parser.set_defaults(func=sync)
+    sync_parser.set_defaults(subcommand="sync")
 
     backup_parser = subparsers.add_parser(
         "backup", aliases=("b"), help="create a backup of an installation"
@@ -101,7 +101,7 @@ def main(argv: List[str] = None):
         action="store_true",
         help="backup the database and the complete WordPress installation",
     )
-    backup_parser.set_defaults(func=backup)
+    backup_parser.set_defaults(subcommand="backup")
 
     restore_parser = subparsers.add_parser(
         "restore", aliases=("r"), help="restore a backup into an installation"
@@ -133,7 +133,7 @@ def main(argv: List[str] = None):
         action="store_true",
         help="restore the database and the complete WordPress installation",
     )
-    restore_parser.set_defaults(func=restore)
+    restore_parser.set_defaults(subcommand="restore")
 
     list_parser = subparsers.add_parser(
         "list", aliases=("l"), help="list existing backups"
@@ -174,12 +174,12 @@ def main(argv: List[str] = None):
         action="store_true",
         help="list full backups",
     )
-    list_parser.set_defaults(func=list_backups)
+    list_parser.set_defaults(subcommand="list")
 
     install_parser = subparsers.add_parser(
         "install", aliases=("i"), help="install new WordPress at site"
     )
-    install_parser.set_defaults(func=install)
+    install_parser.set_defaults(subcommand="install")
 
     args = main_parser.parse_args(argv)
 
