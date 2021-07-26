@@ -5,7 +5,7 @@ from argparse import ArgumentParser, Namespace
 from typing import List, NamedTuple, Optional
 
 
-from wpsync.put import Printer
+from wpsync.printer import Printer
 
 
 WPSYNC_VERSION = "2.0.1"
