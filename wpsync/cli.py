@@ -77,6 +77,7 @@ def main(argv: List[str]):
     # TODO in the jeweilig functions:
     # validate --arguments (combinations of them)
     # interpret positional args
+    return 0
 
 
 class ArgParsers:
