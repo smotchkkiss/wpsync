@@ -208,6 +208,12 @@ def main(argv: List[str] = None):
     # (or eliminate need for them)
     # - but maybe do it later when we know exactly which we're
     # going to need for the command executed?
+    # NOTE: no, on second thought I think it may be a better idea
+    # to only hint at the required external executables (and known-
+    # -to-work versions) in the installation instructions instead
+    # of checking for everything every single time. if a subprocess
+    # call fails, we can still print a message about dependencies
+    # again.
 
     # TODO get config
     # TODO validate config
