@@ -10,7 +10,8 @@ import wpsync
 
 
 def main(argv: List[str]):
-    args = parse_args(argv)
+    arg_parsers = ArgParsers()
+    args = arg_parsers.main.parse_args(argv)
 
     if args.print_config:
         print(json.dumps(vars(args)))
@@ -24,7 +25,7 @@ def main(argv: List[str]):
             args.config
             or args.print_config
             or args.quiet
-            or "subcommand" in args
+            or "command" in args
         ):
             printer.warn("useless additional options with version switch")
             return 1
@@ -55,188 +56,229 @@ def main(argv: List[str]):
     # TODO add config, config path, wpsyncdir and "options" to args
     # (or use another way to pass them to the function)
 
-    if "func" not in args:
-        # TODO bail if no subcommand was called --
-        # I guess args.func wouldn't be set then?
-        print("y u no call subcommand")
+    if "command" not in args:
+        printer.warn("no command issued")
+        arg_parsers.main.print_usage()
         return 1
-    args.func(args)
+    if args.command == "sync":
+        # arg_parsers.sync.print_help()
+        pass
+    elif args.command == "backup":
+        pass
+    elif args.command == "restore":
+        pass
+    elif args.command == "list":
+        pass
+    elif args.command == "install":
+        pass
+    else:
+        # TODO unknown command - this can't technically happen
+        pass
     # TODO in the jeweilig functions:
     # validate --arguments (combinations of them)
     # interpret positional args
 
 
-def parse_args(argv: List[str]):
+class ArgParsers:
+    def __init__(self):
+        self.main = self.get_main_parser()
+        subparsers = self.main.add_subparsers()
+        self.sync = self.get_sync_parser(subparsers)
+        self.backup = self.get_backup_parser(subparsers)
+        self.restore = self.get_restore_parser(subparsers)
+        self.list = self.get_list_parser(subparsers)
+        self.install = self.get_install_parser(subparsers)
 
-    main_parser = ArgumentParser(
-        prog="wpsync",
-        description="Synchronise WordPress sites across ssh, (s)ftp and local hosts",
-        allow_abbrev=False,
-    )
-    main_parser.add_argument(
-        "-V", "--version", action="store_true", help="output version number"
-    )
-    # NOTE I never use this
-    main_parser.add_argument(
-        "-q",
-        "--quiet",
-        action="store_true",
-        help="don't print anything to STDOUT",
-    )
-    # NOTE I never use this
-    main_parser.add_argument(
-        "-c", "--config", help="use the config file specified"
-    )
-    main_parser.add_argument(
-        "-P",
-        "--print-config",
-        action="store_true",
-        help="print configuration and exit",
-    )
+    def get_main_parser(self):
+        main_parser = ArgumentParser(
+            prog="wpsync",
+            description="Synchronise WordPress sites across ssh, (s)ftp and local hosts",
+            allow_abbrev=False,
+        )
+        main_parser.add_argument(
+            "-V",
+            "--version",
+            action="store_true",
+            help="output version number",
+        )
+        # NOTE I never use this
+        main_parser.add_argument(
+            "-q",
+            "--quiet",
+            action="store_true",
+            help="don't print anything to STDOUT",
+        )
+        # NOTE I never use this
+        main_parser.add_argument(
+            "-c", "--config", help="use the config file specified"
+        )
+        main_parser.add_argument(
+            "-P",
+            "--print-config",
+            action="store_true",
+            help="print configuration and exit",
+        )
+        return main_parser
 
-    subparsers = main_parser.add_subparsers()
+    def get_sync_parser(self, subparsers):
+        sync_parser = subparsers.add_parser(
+            "sync", aliases=("s"), help="sync one installation to another"
+        )
+        sync_parser.add_argument(
+            "-d", "--database", action="store_true", help="sync the database"
+        )
+        sync_parser.add_argument(
+            "-u",
+            "--uploads",
+            action="store_true",
+            help="sync the uploads folder",
+        )
+        sync_parser.add_argument(
+            "-p",
+            "--plugins",
+            action="store_true",
+            help="sync the plugins directory",
+        )
+        sync_parser.add_argument(
+            "-t", "--themes", action="store_true", help="sync the themes"
+        )
+        sync_parser.add_argument(
+            "-a", "--all", action="store_true", help="sync all the things"
+        )
+        sync_parser.add_argument(
+            "-f",
+            "--full",
+            action="store_true",
+            help="sync the database and the complete WordPress installation",
+        )
+        sync_parser.set_defaults(command="sync")
+        return sync_parser
 
-    sync_parser = subparsers.add_parser(
-        "sync", aliases=("s"), help="sync one installation to another"
-    )
-    sync_parser.add_argument(
-        "-d", "--database", action="store_true", help="sync the database"
-    )
-    sync_parser.add_argument(
-        "-u", "--uploads", action="store_true", help="sync the uploads folder"
-    )
-    sync_parser.add_argument(
-        "-p",
-        "--plugins",
-        action="store_true",
-        help="sync the plugins directory",
-    )
-    sync_parser.add_argument(
-        "-t", "--themes", action="store_true", help="sync the themes"
-    )
-    sync_parser.add_argument(
-        "-a", "--all", action="store_true", help="sync all the things"
-    )
-    sync_parser.add_argument(
-        "-f",
-        "--full",
-        action="store_true",
-        help="sync the database and the complete WordPress installation",
-    )
-    sync_parser.set_defaults(subcommand="sync")
+    def get_backup_parser(self, subparsers):
+        backup_parser = subparsers.add_parser(
+            "backup", aliases=("b"), help="create a backup of an installation"
+        )
+        backup_parser.add_argument(
+            "-d",
+            "--database",
+            action="store_true",
+            help="backup the database",
+        )
+        backup_parser.add_argument(
+            "-u",
+            "--uploads",
+            action="store_true",
+            help="backup the uploads folder",
+        )
+        backup_parser.add_argument(
+            "-p",
+            "--plugins",
+            action="store_true",
+            help="backup the plugins directory",
+        )
+        backup_parser.add_argument(
+            "-t", "--themes", action="store_true", help="backup the themes"
+        )
+        backup_parser.add_argument(
+            "-a", "--all", action="store_true", help="backup all the things"
+        )
+        backup_parser.add_argument(
+            "-f",
+            "--full",
+            action="store_true",
+            help="backup the database and the complete WordPress installation",
+        )
+        backup_parser.set_defaults(command="backup")
+        return backup_parser
 
-    backup_parser = subparsers.add_parser(
-        "backup", aliases=("b"), help="create a backup of an installation"
-    )
-    backup_parser.add_argument(
-        "-d", "--database", action="store_true", help="backup the database"
-    )
-    backup_parser.add_argument(
-        "-u",
-        "--uploads",
-        action="store_true",
-        help="backup the uploads folder",
-    )
-    backup_parser.add_argument(
-        "-p",
-        "--plugins",
-        action="store_true",
-        help="backup the plugins directory",
-    )
-    backup_parser.add_argument(
-        "-t", "--themes", action="store_true", help="backup the themes"
-    )
-    backup_parser.add_argument(
-        "-a", "--all", action="store_true", help="backup all the things"
-    )
-    backup_parser.add_argument(
-        "-f",
-        "--full",
-        action="store_true",
-        help="backup the database and the complete WordPress installation",
-    )
-    backup_parser.set_defaults(subcommand="backup")
+    def get_restore_parser(self, subparsers):
+        restore_parser = subparsers.add_parser(
+            "restore",
+            aliases=("r"),
+            help="restore a backup into an installation",
+        )
+        restore_parser.add_argument(
+            "-d",
+            "--database",
+            action="store_true",
+            help="restore the database",
+        )
+        restore_parser.add_argument(
+            "-u",
+            "--uploads",
+            action="store_true",
+            help="restore the uploads folder",
+        )
+        restore_parser.add_argument(
+            "-p",
+            "--plugins",
+            action="store_true",
+            help="restore the plugins directory",
+        )
+        restore_parser.add_argument(
+            "-t", "--themes", action="store_true", help="restore the themes"
+        )
+        restore_parser.add_argument(
+            "-a", "--all", action="store_true", help="restore all the things"
+        )
+        restore_parser.add_argument(
+            "-f",
+            "--full",
+            action="store_true",
+            help="restore the database and the complete WordPress installation",
+        )
+        restore_parser.set_defaults(command="restore")
+        return restore_parser
 
-    restore_parser = subparsers.add_parser(
-        "restore", aliases=("r"), help="restore a backup into an installation"
-    )
-    restore_parser.add_argument(
-        "-d", "--database", action="store_true", help="restore the database"
-    )
-    restore_parser.add_argument(
-        "-u",
-        "--uploads",
-        action="store_true",
-        help="restore the uploads folder",
-    )
-    restore_parser.add_argument(
-        "-p",
-        "--plugins",
-        action="store_true",
-        help="restore the plugins directory",
-    )
-    restore_parser.add_argument(
-        "-t", "--themes", action="store_true", help="restore the themes"
-    )
-    restore_parser.add_argument(
-        "-a", "--all", action="store_true", help="restore all the things"
-    )
-    restore_parser.add_argument(
-        "-f",
-        "--full",
-        action="store_true",
-        help="restore the database and the complete WordPress installation",
-    )
-    restore_parser.set_defaults(subcommand="restore")
+    def get_list_parser(self, subparsers):
+        list_parser = subparsers.add_parser(
+            "list", aliases=("l"), help="list existing backups"
+        )
+        list_parser.add_argument(
+            "-d",
+            "--database",
+            action="store_true",
+            help="list backups containing the database",
+        )
+        list_parser.add_argument(
+            "-u",
+            "--uploads",
+            action="store_true",
+            help="list backups containing the uploads folder",
+        )
+        list_parser.add_argument(
+            "-p",
+            "--plugins",
+            action="store_true",
+            help="list backups containing the plugins directory",
+        )
+        list_parser.add_argument(
+            "-t",
+            "--themes",
+            action="store_true",
+            help="list backups containing the themes",
+        )
+        list_parser.add_argument(
+            "-a",
+            "--all",
+            action="store_true",
+            help="list backups containing all of these things",
+        )
+        list_parser.add_argument(
+            "-f",
+            "--full",
+            action="store_true",
+            help="list full backups",
+        )
+        list_parser.set_defaults(command="list")
+        return list_parser
 
-    list_parser = subparsers.add_parser(
-        "list", aliases=("l"), help="list existing backups"
-    )
-    list_parser.add_argument(
-        "-d",
-        "--database",
-        action="store_true",
-        help="list backups containing the database",
-    )
-    list_parser.add_argument(
-        "-u",
-        "--uploads",
-        action="store_true",
-        help="list backups containing the uploads folder",
-    )
-    list_parser.add_argument(
-        "-p",
-        "--plugins",
-        action="store_true",
-        help="list backups containing the plugins directory",
-    )
-    list_parser.add_argument(
-        "-t",
-        "--themes",
-        action="store_true",
-        help="list backups containing the themes",
-    )
-    list_parser.add_argument(
-        "-a",
-        "--all",
-        action="store_true",
-        help="list backups containing all of these things",
-    )
-    list_parser.add_argument(
-        "-f",
-        "--full",
-        action="store_true",
-        help="list full backups",
-    )
-    list_parser.set_defaults(subcommand="list")
-
-    install_parser = subparsers.add_parser(
-        "install", aliases=("i"), help="install new WordPress at site"
-    )
-    install_parser.set_defaults(subcommand="install")
-
-    args = main_parser.parse_args(argv)
-    return args
+    def get_install_parser(self, subparsers):
+        install_parser = subparsers.add_parser(
+            "install", aliases=("i"), help="install new WordPress at site"
+        )
+        install_parser.set_defaults(command="install")
+        return install_parser
 
 
 class Printer:
