@@ -1,5 +1,7 @@
 "entry point for command line script"
 
-from wpsync.cli import main
+import sys
 
-main()
+from wpsync.cli_new import main
+
+main(sys.argv[1:])
