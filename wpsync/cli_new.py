@@ -5,6 +5,9 @@ from argparse import ArgumentParser, Namespace
 from typing import List, NamedTuple, Optional
 
 
+from wpsync.put import Printer
+
+
 WPSYNC_VERSION = "2.0.1"
 
 
@@ -185,11 +188,21 @@ def main(argv: List[str] = None):
 
     if args.print_config:
         print(json.dumps(vars(args)))
-        return
+        return 0
+
+    printer = Printer(args.quiet)
 
     if args.version:
         print("v" + WPSYNC_VERSION)
-        return
+        if (
+            args.config
+            or args.print_config
+            or args.quiet
+            or "subcommand" in args
+        ):
+            printer.warn("useless additional options with version switch")
+            return 1
+        return 0
 
     # TODO check existence of external executables
     # (or eliminate need for them)
@@ -214,7 +227,7 @@ def main(argv: List[str] = None):
         # TODO bail if no subcommand was called --
         # I guess args.func wouldn't be set then?
         print("y u no call subcommand")
-        return
+        return 1
     args.func(args)
     # TODO in the jeweilig functions:
     # validate --arguments (combinations of them)
@@ -453,4 +466,4 @@ def install():
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    sys.exit(main(sys.argv[1:]))

@@ -46,3 +46,9 @@ class TestCLI(unittest.TestCase):
         self.assertEqual(config["print_config"], True)
         self.assertEqual(config["quiet"], True)
         self.assertEqual(config["version"], False)
+
+    def test_version_with_extra_options(self):
+        with contextlib.redirect_stderr(io.StringIO()) as f:
+            wpsync.cli_new.main(["--config=notexist.ini", "--version"])
+        stderr = f.getvalue()
+        self.assertRegex(stderr, r"useless additional options")
