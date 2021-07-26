@@ -5,13 +5,14 @@ import io
 
 from subprocess import run
 
-import wpsync.cli_new
+import wpsync
+import wpsync.cli.__main__
 
 
 class TestCLI(unittest.TestCase):
     def test_print_config(self):
         with contextlib.redirect_stdout(io.StringIO()) as f:
-            wpsync.cli_new.main(["--print-config"])
+            wpsync.cli.__main__.main(["--print-config"])
         config = json.loads(f.getvalue())
         self.assertEqual(config["config"], None)
         self.assertEqual(config["print_config"], True)
@@ -20,7 +21,7 @@ class TestCLI(unittest.TestCase):
 
     def test_print_config_version(self):
         with contextlib.redirect_stdout(io.StringIO()) as f:
-            wpsync.cli_new.main(["--print-config", "--version"])
+            wpsync.cli.__main__.main(["--print-config", "--version"])
         config = json.loads(f.getvalue())
         self.assertEqual(config["config"], None)
         self.assertEqual(config["print_config"], True)
@@ -29,7 +30,7 @@ class TestCLI(unittest.TestCase):
 
     def test_print_config_config(self):
         with contextlib.redirect_stdout(io.StringIO()) as f:
-            wpsync.cli_new.main(
+            wpsync.cli.__main__.main(
                 ["--print-config", "--config", "notexist.ini"]
             )
         config = json.loads(f.getvalue())
@@ -40,15 +41,24 @@ class TestCLI(unittest.TestCase):
 
     def test_print_config_quiet(self):
         with contextlib.redirect_stdout(io.StringIO()) as f:
-            wpsync.cli_new.main(["--print-config", "--quiet"])
+            wpsync.cli.__main__.main(["--print-config", "--quiet"])
         config = json.loads(f.getvalue())
         self.assertEqual(config["config"], None)
         self.assertEqual(config["print_config"], True)
         self.assertEqual(config["quiet"], True)
         self.assertEqual(config["version"], False)
 
+    def test_print_version(self):
+        with contextlib.redirect_stdout(io.StringIO()) as stdout_f:
+            wpsync.cli.__main__.main(["--version"])
+        stdout = stdout_f.getvalue()
+        self.assertEqual(stdout, "v" + wpsync.VERSION + "\n")
+
     def test_version_with_extra_options(self):
-        with contextlib.redirect_stderr(io.StringIO()) as f:
-            wpsync.cli_new.main(["--config=notexist.ini", "--version"])
-        stderr = f.getvalue()
+        with contextlib.redirect_stdout(io.StringIO()) as stdout_f:
+            with contextlib.redirect_stderr(io.StringIO()) as stderr_f:
+                wpsync.cli.__main__.main(
+                    ["--config=notexist.ini", "--version"]
+                )
+        stderr = stderr_f.getvalue()
         self.assertRegex(stderr, r"useless additional options")

@@ -2,6 +2,6 @@
 
 import sys
 
-from wpsync.cli_new import main
+from wpsync.cli.__main__ import main
 
-main(sys.argv[1:])
+sys.exit(main(sys.argv[1:]))
