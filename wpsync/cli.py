@@ -60,6 +60,13 @@ def main(argv: List[str]):
         printer.warn("no command issued")
         arg_parsers.main.print_usage()
         return 1
+
+    # TODO make sure server component is installed on all involved
+    # installations
+
+    # TODO in the jeweilig functions:
+    # validate --arguments (combinations of them)
+    # interpret positional args
     if args.command == "sync":
         # arg_parsers.sync.print_help()
         pass
@@ -72,11 +79,9 @@ def main(argv: List[str]):
     elif args.command == "install":
         pass
     else:
-        # TODO unknown command - this can't technically happen
-        pass
-    # TODO in the jeweilig functions:
-    # validate --arguments (combinations of them)
-    # interpret positional args
+        # this can't technically happen, but whatever
+        printer.error(f"unknown command: {args.command}")
+        return 1
     return 0
 
 
