@@ -191,10 +191,6 @@ def main(argv: List[str] = None):
         print("v" + WPSYNC_VERSION)
         return
 
-    # TODO of course remove this print and also validate the
-    # main arguments ("options"?)
-    print(args)
-
     # TODO check existence of external executables
     # (or eliminate need for them)
     # - but maybe do it later when we know exactly which we're
