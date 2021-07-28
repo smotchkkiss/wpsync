@@ -1,10 +1,7 @@
 import json
-import sys
 
 from argparse import ArgumentParser, Namespace
 from typing import List, NamedTuple, Optional
-
-from crayons import blue, cyan, yellow, red, green, ColoredString
 
 import wpsync
 
@@ -17,8 +14,6 @@ def main(argv: List[str]):
         print(json.dumps(vars(args)))
         return 0
 
-    printer = Printer(args.quiet)
-
     if args.version:
         print("v" + wpsync.__version__)
         if (
@@ -27,7 +22,10 @@ def main(argv: List[str]):
             or args.quiet
             or "command" in args
         ):
-            printer.warn("useless additional options with version switch")
+            # TODO what to do with messages from the cli itself?
+            # maybe instantiate a termlogger here already and hand
+            # it to our WPSync instance later
+            print("useless additional options with version switch")
             return 1
         return 0
 
@@ -57,7 +55,8 @@ def main(argv: List[str]):
     # (or use another way to pass them to the function)
 
     if "command" not in args:
-        printer.warn("no command issued")
+        # TODO (s.o.)
+        print("no command issued")
         arg_parsers.main.print_usage()
         return 1
 
@@ -80,7 +79,8 @@ def main(argv: List[str]):
         pass
     else:
         # this can't technically happen, but whatever
-        printer.error(f"unknown command: {args.command}")
+        # TODO (s.o.)
+        print(f"unknown command: {args.command}")
         return 1
     return 0
 
@@ -285,38 +285,6 @@ class ArgParsers:
         )
         install_parser.set_defaults(command="install")
         return install_parser
-
-
-class Printer:
-    def __init__(self, quiet):
-        self.quiet = quiet
-
-    def format(self, string, always=False, bold=False):
-        return ColoredString("RESET", string, always_color=always, bold=bold)
-
-    def print(self, formatted_string, stderr=False):
-        if not stderr and not self.quiet:
-            print(formatted_string)
-        if stderr:
-            print(formatted_string, file=sys.stderr)
-
-    def title(self, message):
-        self.print(f'{blue("➙")} {self.format(message, bold=True)}')
-
-    def step(self, message):
-        self.print(self.format(f"• {message}"))
-
-    def error(self, message):
-        self.print(f'{red("✗")} {red(message, bold=True)}', stderr=True)
-
-    def warn(self, message):
-        self.print(f'{yellow("⚠")} {self.format(message)}', stderr=True)
-
-    def info(self, message):
-        self.print(f'{self.format("ℹ")} {self.format(message)}')
-
-    def success(self, message):
-        self.print(f'{green("✔")} {self.format(message, bold=True)}')
 
 
 def cli_sync(args: Namespace) -> None:

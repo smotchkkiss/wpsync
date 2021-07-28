@@ -1,10 +1,12 @@
+from wpsync.log import TermLogger
+
+
 class WPSync:
     def __init__(self, logger=None):
         if logger:
             self.logger = logger
         else:
-            # TODO create instance of default logger class
-            self.logger = None
+            self.logger = TermLogger()
 
     def sync(self):
         raise NotImplementedError()

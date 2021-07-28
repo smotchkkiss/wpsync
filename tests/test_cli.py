@@ -56,5 +56,7 @@ class TestCLI(unittest.TestCase):
         with contextlib.redirect_stdout(io.StringIO()) as stdout_f:
             with contextlib.redirect_stderr(io.StringIO()) as stderr_f:
                 wpsync.cli.main(["--config=notexist.ini", "--version"])
-        stderr = stderr_f.getvalue()
-        self.assertRegex(stderr, r"useless additional options")
+        # stderr = stderr_f.getvalue()
+        stdout = stdout_f.getvalue()
+        # self.assertRegex(stderr, r"useless additional options")
+        self.assertRegex(stdout, r"useless additional options")
