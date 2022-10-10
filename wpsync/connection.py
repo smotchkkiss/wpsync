@@ -69,13 +69,13 @@ class Connection:
 
         # trust selfsigned certificate if exists, needed for SSL
         # connections to localhost
-        if (
+        if self.site["no_verify_ssl"]:
+            verify = False
+        elif (
             self.site["protocol"] == "file"
             and "_default_local_selfsigned_ca" in self.site
         ):
             verify = self.site["_default_local_selfsigned_ca"]
-        elif self.site["no_verify_ssl"]:
-            verify = False
         else:
             verify = None
 
