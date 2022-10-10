@@ -2,6 +2,7 @@ import sys
 from tempfile import NamedTemporaryFile
 from pathlib import Path
 from shlex import quote
+from urllib.parse import urlparse
 import re
 import sqlparse
 from .host_info import HostInfo
@@ -179,8 +180,16 @@ def restore_database(source, dest, connection, backup_dir, host, quiet):
         # TODO:
         # escape quotes in all strings formatted into php
         # templates!
+        # NOTE
+        # replacing only the domain instead of the full site_url
+        # here, because sometimes urls deep in custom fields didn't
+        # get replaced properly because they're saved as json, i.e.
+        # with their slashes escaped, so the full url wouldn't
+        # match
+        source_domain = urlparse(source["site_url"]).netloc
+        dest_domain = urlparse(dest["site_url"]).netloc
         php_code = mysqlreplace_php_template.format(
-            search=source["site_url"], replace=dest["site_url"], **dest
+            search=source_domain, replace=dest_domain, **dest
         )
         mysqlreplace_library_local = this_dir / "srdb.class.php"
         mysqlreplace_library_remote = connection.normalise("srdb.class.php")
