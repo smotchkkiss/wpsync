@@ -193,9 +193,7 @@ def restore_database(source, dest, connection, backup_dir, host, quiet):
         )
         mysqlreplace_library_local = this_dir / "srdb.class.php"
         mysqlreplace_library_remote = connection.normalise("srdb.class.php")
-        connection.put(
-            mysqlreplace_library_local, mysqlreplace_library_remote
-        )
+        connection.put(mysqlreplace_library_local, mysqlreplace_library_remote)
         try:
             connection.run_php(php_code)
         except RemoteExecutionError as error:

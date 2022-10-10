@@ -342,9 +342,7 @@ def main():
                 sys.exit(1)
         if site["protocol"] in ["ssh", "sftp"]:
             if "user" not in site or "host" not in site:
-                print(
-                    "user and host must be specified with protocol=ssh|sftp"
-                )
+                print("user and host must be specified with protocol=ssh|sftp")
                 print(f"please check {site_name} in your config")
                 sys.exit(1)
         if site["protocol"] == "ssh":
